@@ -1,0 +1,1 @@
+docker build --file dockerfile --tag myapp

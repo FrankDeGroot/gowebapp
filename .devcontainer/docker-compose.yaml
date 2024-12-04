@@ -1,0 +1,20 @@
+services:
+  golang:
+    command: tail -F anything
+    container_name: golang
+    depends_on:
+      - cockroachdb
+    environment:
+      - DATABASE_URL=postgres://root@cockroachdb:26257/defaultdb
+    hostname: golang
+    image: golang:latest
+    volumes:
+      - ..:/workspace
+  cockroachdb:
+    command: start-single-node --insecure
+    container_name: cockroachdb
+    hostname: cockroachdb
+    image: cockroachdb/cockroach:latest
+    ports:
+      - "26257:26257"
+      - "8080:8080"
