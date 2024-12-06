@@ -1,0 +1,30 @@
+GET http://localhost:8000/api/todos
+###
+GET http://localhost:8000/api/todos/1
+###
+POST http://localhost:8000/api/todos
+Content-Type: application/json
+
+{
+  "id": 2,
+  "description": "test app",
+  "done": false
+}
+###
+PUT http://localhost:8000/api/todos
+Content-Type: application/json
+
+{
+  "id": 1,
+  "description": "write app",
+  "done": true
+}
+###
+POST http://localhost:8000/api/todos
+Content-Type: application/json
+
+{
+  "id": 1,
+  "description": "write app",
+  "done": true
+}

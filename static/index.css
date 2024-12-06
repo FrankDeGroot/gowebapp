@@ -1,0 +1,51 @@
+@media (prefers-color-scheme: light) {
+  body {
+    --background-color: white;
+    --color: black;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --background-color: black;
+    --color: white;
+  }
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--color);
+  font-family: sans-serif;
+}
+
+input {
+  background-color: inherit;
+  border: none;
+  color: inherit;
+  font: inherit;
+}
+
+input[type="checkbox"] {
+  display: block;
+  height: 0;
+  margin: 0;
+  width: 0;
+}
+
+input[type="checkbox"] + label::before {
+  border: 1px solid transparent;
+  content: '✔';
+}
+
+input[type="checkbox"]:focus + label::before {
+  border: 1px solid white;
+  border-radius: 3px;
+}
+
+input[type="checkbox"]:checked + label::before {
+  color: var(--color);
+}
+
+input[type="checkbox"]:not(:checked) + label::before {
+  color: var(--background-color);
+}

@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <title>To Do App</title>
+        <link rel="stylesheet" href="index.css"/>
+    </head>
+    <body>
+        <h1>To Do App</h1>
+        <!-- TODO https://dev.to/flippedcoding/how-to-make-a-table-without-using-the-html-table-elements-5e11 to layout as table -->
+        <div id="todos">
+        </div>
+        <script src="index.js"></script>
+        <template id="todo">
+            <form>
+                <input type="hidden" name="id">
+                <input type="checkbox" name="done">
+                <label for="done"></label>
+                <input name="description" placeholder="description">
+            </form>
+        </template>
+    </body>
+</html>
