@@ -26,7 +26,6 @@ input {
 }
 
 input[type="checkbox"] {
-  display: block;
   height: 0;
   margin: 0;
   width: 0;
@@ -35,6 +34,7 @@ input[type="checkbox"] {
 input[type="checkbox"] + label::before {
   border: 1px solid transparent;
   content: '✔';
+  padding: 0 4px 0 4px;
 }
 
 input[type="checkbox"]:focus + label::before {

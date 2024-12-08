@@ -1,21 +1,27 @@
+<!DOCTYPE html>
 <html>
     <head>
+        <meta charset="utf-8">
         <title>To Do App</title>
         <link rel="stylesheet" href="index.css"/>
     </head>
     <body>
-        <h1>To Do App</h1>
+        <h1>To Do App <span id="status"></span></h1>
         <!-- TODO https://dev.to/flippedcoding/how-to-make-a-table-without-using-the-html-table-elements-5e11 to layout as table -->
         <div id="todos">
+            <template>
+                <form>
+                    <input type="hidden" name="id">
+                    <input name="description" placeholder="description">
+                    <input type="checkbox" name="done">
+                    <label for="done"></label>
+                </form>
+            </template>
         </div>
-        <script src="index.js"></script>
-        <template id="todo">
-            <form>
-                <input type="hidden" name="id">
-                <input type="checkbox" name="done">
-                <label for="done"></label>
-                <input name="description" placeholder="description">
-            </form>
-        </template>
+        <form id="addTodo">
+            <input name="description" placeholder="description">
+            <input type="submit" value="+">
+        </form>
+        <script src="index.js" type="module"></script>
     </body>
 </html>

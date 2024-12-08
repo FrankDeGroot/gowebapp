@@ -19,36 +19,54 @@ var (
 	ErrOther       = errors.New("other error")
 )
 
-func Init() {
+func Connect() {
 	var err error
 	pool, err = pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
+}
 
-	if _, err := pool.Exec(context.Background(), "create table if not exists todo (id integer primary key, description varchar, done boolean)"); err != nil {
+func Init() {
+	if _, err := pool.Exec(context.Background(), "create table if not exists todos (id integer primary key, description varchar, done boolean)"); err != nil {
 		log.Fatalf("Unable to create table: %v\n", err)
 	}
 
-	Upsert(&dto.ToDo{Id: 1, Description: "write app", Done: false})
+	Upsert(&dto.SavedToDo{Id: 1, ToDo: dto.ToDo{Description: "write app", Done: false}})
 }
 
 func Close() {
 	pool.Close()
 }
 
-func Upsert(toDo *dto.ToDo) error {
-	_, err := pool.Exec(context.Background(), "upsert into todo values ($1, $2, $3)", toDo.Id, toDo.Description, toDo.Done)
+func Insert(toDo *dto.ToDo) (*dto.SavedToDo, error) {
+	// TODO make this concurrent
+	var id int
+	if err := pool.QueryRow(context.Background(), "select max(id) from todos").Scan(&id); err != nil {
+		log.Fatalf("Error getting max id: %v\n", err)
+	}
+	id = id + 1
+	_, err := pool.Exec(context.Background(), "insert into todos values ($1, $2, $3)", id, toDo.Description, toDo.Done)
+	return &dto.SavedToDo{Id: id, ToDo: *toDo}, err
+}
+
+func Update(toDo *dto.SavedToDo) error {
+	_, err := pool.Exec(context.Background(), "update todos set description = $2, done = $3 where id = $1", toDo.Id, toDo.Description, toDo.Done)
 	return err
 }
 
-func Get(id int) (*dto.ToDo, error) {
+func Upsert(toDo *dto.SavedToDo) error {
+	_, err := pool.Exec(context.Background(), "upsert into todos values ($1, $2, $3)", toDo.Id, toDo.Description, toDo.Done)
+	return err
+}
+
+func Get(id int) (*dto.SavedToDo, error) {
 	var description string
 	var done bool
-	err := pool.QueryRow(context.Background(), "select description, done from todo where id=$1", id).Scan(&description, &done)
+	err := pool.QueryRow(context.Background(), "select description, done from todos where id=$1", id).Scan(&description, &done)
 	switch err {
 	case nil:
-		return &dto.ToDo{Id: id, Description: description, Done: done}, nil
+		return &dto.SavedToDo{Id: id, ToDo: dto.ToDo{Description: description, Done: done}}, nil
 	case pgx.ErrNoRows:
 		return nil, ErrNotFound
 	case pgx.ErrTooManyRows:
@@ -58,20 +76,20 @@ func Get(id int) (*dto.ToDo, error) {
 	}
 }
 
-func GetAll() (*[]dto.ToDo, error) {
-	rows, err := pool.Query(context.Background(), "select id, description, done from todo")
+func GetAll() (*[]dto.SavedToDo, error) {
+	rows, err := pool.Query(context.Background(), "select id, description, done from todos")
 	if err != nil {
 		log.Fatalf("Error getting todos: %v\n", err)
 	}
 
-	todos := make([]dto.ToDo, 0)
+	todos := make([]dto.SavedToDo, 0)
 	for rows.Next() {
 		values, err := rows.Values()
 		if err != nil {
 			log.Printf("Error getting values: %v\n", err)
 			return nil, err
 		}
-		todos = append(todos, dto.ToDo{Id: int(values[0].(int64)), Description: values[1].(string), Done: values[2].(bool)})
+		todos = append(todos, dto.SavedToDo{Id: int(values[0].(int64)), ToDo: dto.ToDo{Description: values[1].(string), Done: values[2].(bool)}})
 	}
 	return &todos, nil
 }
