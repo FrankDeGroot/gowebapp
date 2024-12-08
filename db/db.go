@@ -42,11 +42,16 @@ func Close() {
 func Insert(toDo *dto.ToDo) (*dto.SavedToDo, error) {
 	// TODO make this concurrent
 	var id int
-	if err := pool.QueryRow(context.Background(), "select max(id) from todos").Scan(&id); err != nil {
+	err := pool.QueryRow(context.Background(), "select coalesce(max(id), 0) from todos").Scan(&id)
+	switch err {
+	case nil:
+		id = id + 1
+	case pgx.ErrNoRows:
+		id = 0
+	default:
 		log.Fatalf("Error getting max id: %v\n", err)
 	}
-	id = id + 1
-	_, err := pool.Exec(context.Background(), "insert into todos values ($1, $2, $3)", id, toDo.Description, toDo.Done)
+	_, err = pool.Exec(context.Background(), "insert into todos values ($1, $2, $3)", id, toDo.Description, toDo.Done)
 	return &dto.SavedToDo{Id: id, ToDo: *toDo}, err
 }
 
@@ -60,7 +65,12 @@ func Upsert(toDo *dto.SavedToDo) error {
 	return err
 }
 
-func Get(id int) (*dto.SavedToDo, error) {
+func Delete(id int) error {
+	_, err := pool.Exec(context.Background(), "delete from todos where id = $1", id)
+	return err
+}
+
+func GetOne(id int) (*dto.SavedToDo, error) {
 	var description string
 	var done bool
 	err := pool.QueryRow(context.Background(), "select description, done from todos where id=$1", id).Scan(&description, &done)
@@ -81,7 +91,6 @@ func GetAll() (*[]dto.SavedToDo, error) {
 	if err != nil {
 		log.Fatalf("Error getting todos: %v\n", err)
 	}
-
 	todos := make([]dto.SavedToDo, 0)
 	for rows.Next() {
 		values, err := rows.Values()

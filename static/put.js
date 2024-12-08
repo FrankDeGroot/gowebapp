@@ -13,6 +13,18 @@ export async function post(form) {
     await save('POST', form)
 }
 
+export async function del(id) {
+    busy()
+    const response = await fetch(`/api/todos/${id}`, {
+        method: 'DELETE'
+    })
+    if (response.ok) {
+        done()
+    } else {
+        error()
+    }
+}
+
 async function put(form) {
     await save('PUT', form)
 }
@@ -41,6 +53,8 @@ function toObj(form) {
                 break
             case 'checkbox':
                 value = input.checked
+                break
+            case 'button':
                 break
             default:
                 value = input.value

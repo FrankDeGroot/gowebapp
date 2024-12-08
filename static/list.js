@@ -1,21 +1,33 @@
-import { markPut } from "./put.js"
+import { del, markPut, post } from "./put.js"
 import { busy, done, error } from "./status.js"
 
-export async function list(path, list) {
-    busy()
-    const response = await fetch(`/api/${path}`)
-    if (response.ok) {
-        done()
-    } else {
-        error()
+export async function list(add, list) {
+    const template = list.querySelector("template")
+    async function reload() {
+        busy()
+        const response = await fetch('/api/todos')
+        if (response.ok) {
+            done()
+        } else {
+            error()
+        }
+        const ids = new Set()
+        for(const thing of await response.json()) {
+            ids.add(thing.id)
+            toForm(addForm(list.id + thing.id, list, template), thing)
+        }
+        for (const form of list.querySelectorAll('form')) {
+            if (!ids.has(parseInt(form.id.value))) {
+                list.removeChild(form)
+            }
+        }
     }
-    setList(await response.json(), list)
-}
-
-export function setList(things, list) {
-    for(const thing of things) {
-        toForm(addForm(list.id + thing.id, list, list.querySelector("template")), thing)
-    }
+    document.getElementById(add).addEventListener("submit", async e => {
+        e.preventDefault()
+        await post(e.target)
+        e.target.reset()
+        reload()
+    })
     list.addEventListener('submit', e => {
         e.preventDefault()
         markPut(e.target)
@@ -23,6 +35,14 @@ export function setList(things, list) {
     list.addEventListener('input', e => {
         markPut(e.target.closest('form'))
     })
+    list.addEventListener('click', async e => {
+        const elm = e.target
+        if (elm.name === 'delete') {
+            await del(e.target.closest('form').id.value)
+            reload()
+        }
+    })
+    reload()
 }
 
 function addForm(formId, list, template) {
