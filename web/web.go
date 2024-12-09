@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"todo-app/db"
 	"todo-app/dto"
 )
@@ -34,11 +33,7 @@ func getAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func getOne(w http.ResponseWriter, r *http.Request) {
-	id, err := getPathId(w, r)
-	if err != nil {
-		return
-	}
-	toDo, err := db.GetOne(id)
+	toDo, err := db.GetOne(r.PathValue("id"))
 	switch err {
 	case nil:
 		encode(w, toDo)
@@ -76,29 +71,10 @@ func put(w http.ResponseWriter, r *http.Request) {
 }
 
 func delete(w http.ResponseWriter, r *http.Request) {
-	id, err := getPathId(w, r)
-	if err != nil {
-		return
-	}
-	if err := db.Delete(id); err != nil {
+	if err := db.Delete(r.PathValue("id")); err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error deleting todo: %v\n", err)
 	}
-}
-
-func getPathId(w http.ResponseWriter, r *http.Request) (int, error) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	switch err {
-	case nil:
-		return int(id), nil
-	case strconv.ErrSyntax:
-	case strconv.ErrRange:
-		http.Error(w, "id not an integer", http.StatusBadRequest)
-	default:
-		http.Error(w, "Error", http.StatusInternalServerError)
-		log.Printf("Error parsing id: %v\n", err)
-	}
-	return 0, err
 }
 
 func encode(w http.ResponseWriter, a any) error {

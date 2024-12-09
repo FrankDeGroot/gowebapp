@@ -6,6 +6,6 @@ type ToDo struct {
 }
 
 type SavedToDo struct {
-	Id int `json:"id"`
+	Id string `json:"id"`
 	ToDo
 }

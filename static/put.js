@@ -48,9 +48,6 @@ function toObj(form) {
         const name = input.name
         var value
         switch (input.type) {
-            case 'hidden':
-                value = parseInt(input.value)
-                break
             case 'checkbox':
                 value = input.checked
                 break

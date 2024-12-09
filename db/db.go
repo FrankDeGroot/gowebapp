@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"strconv"
 	"todo-app/dto"
 
 	"github.com/jackc/pgx/v5"
@@ -28,11 +29,9 @@ func Connect() {
 }
 
 func Init() {
-	if _, err := pool.Exec(context.Background(), "create table if not exists todos (id integer primary key, description varchar, done boolean)"); err != nil {
+	if _, err := pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)"); err != nil {
 		log.Fatalf("Unable to create table: %v\n", err)
 	}
-
-	Upsert(&dto.SavedToDo{Id: 1, ToDo: dto.ToDo{Description: "write app", Done: false}})
 }
 
 func Close() {
@@ -40,19 +39,11 @@ func Close() {
 }
 
 func Insert(toDo *dto.ToDo) (*dto.SavedToDo, error) {
-	// TODO make this concurrent
-	var id int
-	err := pool.QueryRow(context.Background(), "select coalesce(max(id), 0) from todos").Scan(&id)
-	switch err {
-	case nil:
-		id = id + 1
-	case pgx.ErrNoRows:
-		id = 0
-	default:
-		log.Fatalf("Error getting max id: %v\n", err)
+	var id string
+	if err := pool.QueryRow(context.Background(), "insert into todos(description, done) values ($1, $2) returning id", toDo.Description, toDo.Done).Scan(&id); err != nil {
+		return nil, err
 	}
-	_, err = pool.Exec(context.Background(), "insert into todos values ($1, $2, $3)", id, toDo.Description, toDo.Done)
-	return &dto.SavedToDo{Id: id, ToDo: *toDo}, err
+	return &dto.SavedToDo{Id: id, ToDo: *toDo}, nil
 }
 
 func Update(toDo *dto.SavedToDo) error {
@@ -65,12 +56,12 @@ func Upsert(toDo *dto.SavedToDo) error {
 	return err
 }
 
-func Delete(id int) error {
+func Delete(id string) error {
 	_, err := pool.Exec(context.Background(), "delete from todos where id = $1", id)
 	return err
 }
 
-func GetOne(id int) (*dto.SavedToDo, error) {
+func GetOne(id string) (*dto.SavedToDo, error) {
 	var description string
 	var done bool
 	err := pool.QueryRow(context.Background(), "select description, done from todos where id=$1", id).Scan(&description, &done)
@@ -98,7 +89,7 @@ func GetAll() (*[]dto.SavedToDo, error) {
 			log.Printf("Error getting values: %v\n", err)
 			return nil, err
 		}
-		todos = append(todos, dto.SavedToDo{Id: int(values[0].(int64)), ToDo: dto.ToDo{Description: values[1].(string), Done: values[2].(bool)}})
+		todos = append(todos, dto.SavedToDo{Id: strconv.FormatInt(values[0].(int64), 10), ToDo: dto.ToDo{Description: values[1].(string), Done: values[2].(bool)}})
 	}
 	return &todos, nil
 }

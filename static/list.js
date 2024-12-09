@@ -17,7 +17,7 @@ export async function list(add, list) {
             toForm(addForm(list.id + thing.id, list, template), thing)
         }
         for (const form of list.querySelectorAll('form')) {
-            if (!ids.has(parseInt(form.id.value))) {
+            if (!ids.has(form.id.value)) {
                 list.removeChild(form)
             }
         }
