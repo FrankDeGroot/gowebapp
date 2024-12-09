@@ -33,7 +33,7 @@ input[type="checkbox"] {
 
 input[type="checkbox"] + label::before {
   border: 1px solid transparent;
-  content: '✔';
+  content: '✔️';
   padding: 0 4px 0 4px;
 }
 
@@ -42,10 +42,23 @@ input[type="checkbox"]:focus + label::before {
   border-radius: 3px;
 }
 
-input[type="checkbox"]:checked + label::before {
-  color: var(--color);
+input[type="checkbox"]:not(:checked) + label::before {
+  color: transparent;
 }
 
-input[type="checkbox"]:not(:checked) + label::before {
-  color: var(--background-color);
+#todos {
+  display: grid;
+  grid-template-columns: 2em auto 2em
+}
+
+#todos form {
+  display: contents;
+}
+
+input[name="checkbox"], label {
+  grid-column: 1 / 2;
+}
+
+input[name="description"] {
+  grid-column: 2 / 3;
 }

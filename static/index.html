@@ -7,7 +7,6 @@
     </head>
     <body>
         <h1>To Do App <span id="status"></span></h1>
-        <!-- TODO https://dev.to/flippedcoding/how-to-make-a-table-without-using-the-html-table-elements-5e11 to layout as table -->
         <div id="todos">
             <template>
                 <form>
@@ -15,14 +14,14 @@
                     <input type="checkbox" name="done">
                     <label for="done"></label>
                     <input name="description" placeholder="description">
-                    <input type="button" value="x" name="delete">
+                    <input type="button" value="❌" name="delete">
                 </form>
             </template>
+            <form class="new">
+                <input name="description" placeholder="description">
+                <input type="submit" value="➕">
+            </form>
         </div>
-        <form id="addTodo">
-            <input name="description" placeholder="description">
-            <input type="submit" value="+">
-        </form>
         <script src="index.js" type="module"></script>
     </body>
 </html>
