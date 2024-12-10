@@ -26,9 +26,6 @@ func Connect() {
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
-}
-
-func Init() {
 	if _, err := pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)"); err != nil {
 		log.Fatalf("Unable to create table: %v\n", err)
 	}
