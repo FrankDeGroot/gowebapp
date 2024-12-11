@@ -1,6 +1,5 @@
 services:
   golang:
-    command: tail -F anything
     container_name: golang-todo-app
     depends_on:
       - cockroachdb
@@ -10,6 +9,8 @@ services:
     image: golang:latest
     ports:
       - "8000:8000"
+    stdin_open: true
+    tty: true
     volumes:
       - ..:/todo-app
   cockroachdb:

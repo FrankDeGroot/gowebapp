@@ -14,6 +14,9 @@
     ],
     "service": "golang",
     "forwardPorts": [ 8000 ],
-    "postCreateCommand": "go install -v github.com/go-delve/delve/cmd/dlv@latest",
+    "postCreateCommand": {
+        "delve": "go install -v github.com/go-delve/delve/cmd/dlv@latest",
+        "git": "git config --global --add safe.directory /todo-app",
+    },
     "workspaceFolder": "/todo-app"
 }
