@@ -1,15 +1,17 @@
 services:
   golang:
     command: tail -F anything
-    container_name: golang
+    container_name: golang-todo-app
     depends_on:
       - cockroachdb
     environment:
       - DATABASE_URL=postgres://root@cockroachdb:26257/defaultdb
     hostname: golang
     image: golang:latest
+    ports:
+      - "8000:8000"
     volumes:
-      - ..:/workspace
+      - ..:/todo-app
   cockroachdb:
     command: start-single-node --insecure
     container_name: cockroachdb

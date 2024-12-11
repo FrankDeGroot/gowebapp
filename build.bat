@@ -1,1 +1,1 @@
-docker build --file dockerfile --tag todos-app
+docker build --file dockerfile --tag todo-app

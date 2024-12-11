@@ -9,12 +9,11 @@
             ]
         }
     },
-    "dockerComposeFile": "docker-compose.yaml",
+    "dockerComposeFile": [
+        "docker-compose.yaml"
+    ],
     "service": "golang",
     "forwardPorts": [ 8000 ],
     "postCreateCommand": "go install -v github.com/go-delve/delve/cmd/dlv@latest",
-    "runArgs": [
-        "--name", "vscode_golang"
-    ],
-    "workspaceFolder": "/workspace"
+    "workspaceFolder": "/todo-app"
 }
