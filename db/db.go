@@ -3,9 +3,11 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"time"
 	"todo-app/dto"
 
 	"github.com/jackc/pgx/v5"
@@ -22,13 +24,30 @@ var (
 
 func Connect() {
 	var err error
-	pool, err = pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	pool, err = retry(10, 1, func() (*pgxpool.Pool, error) {
+		return pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	})
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 	if _, err := pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)"); err != nil {
 		log.Fatalf("Unable to create table: %v\n", err)
 	}
+}
+
+func retry[T any](attempts int, sleep int, f func() (T, error)) (result T, err error) {
+	for i := 0; i < attempts; i++ {
+		if i > 0 {
+			log.Println("retrying after error:", err)
+			time.Sleep(time.Duration(sleep) * time.Second)
+			sleep *= 2
+		}
+		result, err = f()
+		if err == nil {
+			return result, nil
+		}
+	}
+	return result, fmt.Errorf("after %d attempts, last error: %s", attempts, err)
 }
 
 func Close() {
