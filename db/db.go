@@ -11,6 +11,7 @@ import (
 	"todo-app/dto"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -24,19 +25,19 @@ var (
 
 func Connect() {
 	var err error
-	pool, err = retry(10, 1, func() (*pgxpool.Pool, error) {
-		return pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
-	})
+	pool, err = pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
-	if _, err := pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)"); err != nil {
+	if _, err := retry(1, 10, func() (pgconn.CommandTag, error) {
+		return pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)")
+	}); err != nil {
 		log.Fatalf("Unable to create table: %v\n", err)
 	}
 }
 
-func retry[T any](attempts int, sleep int, f func() (T, error)) (result T, err error) {
-	for i := 0; i < attempts; i++ {
+func retry[T any](sleep int, attempts int, f func() (T, error)) (result T, err error) {
+	for i := 0; i < 10; i++ {
 		if i > 0 {
 			log.Println("retrying after error:", err)
 			time.Sleep(time.Duration(sleep) * time.Second)

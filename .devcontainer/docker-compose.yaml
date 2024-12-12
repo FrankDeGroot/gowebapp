@@ -8,7 +8,7 @@ services:
     hostname: golang
     image: golang:latest
     ports:
-      - "8000:8000"
+      - "8888:8000"
     stdin_open: true
     tty: true
     volumes:
@@ -19,5 +19,4 @@ services:
     hostname: cockroachdb
     image: cockroachdb/cockroach:latest
     ports:
-      - "26257:26257"
-      - "8080:8080"
+      - "8008:8080"
