@@ -4,8 +4,7 @@
             "extensions": [
                 "golang.go",
                 "humao.rest-client",
-                "vscode.docker",
-                "vscode.yaml"
+                "ms-azuretools.vscode-docker"
             ]
         }
     },

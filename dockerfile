@@ -6,4 +6,5 @@ COPY . .
 RUN env CGO_ENABLED=0 env GOOS=linux GOARCH=amd64 go build -o todo-app
 FROM scratch
 COPY --from=builder /app/todo-app /todo-app
+ADD static /static
 ENTRYPOINT ["/todo-app"]

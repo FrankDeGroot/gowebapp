@@ -1,1 +1,1 @@
-docker build --file dockerfile --tag todo-app
+docker build --file dockerfile --tag todo-app --rm
