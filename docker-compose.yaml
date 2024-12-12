@@ -1,11 +1,11 @@
 services:
-  golang:
+  todo-app:
     container_name: web-server-todo-app
     depends_on:
     - cockroachdb
     environment:
-      - DATABASE_URL=postgres://root@cockroachdb:26257/defaultdb
-    hostname: golang
+    - DATABASE_URL=postgres://root@cockroachdb:26257/defaultdb
+    hostname: web-server
     image: todo-app:latest
     ports:
     - "8000:8000"
