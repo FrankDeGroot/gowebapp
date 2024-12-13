@@ -1,5 +1,8 @@
 services:
   todo-app:
+    build:
+      context: ..
+      dockerfile: .docker/dockerfile
     container_name: web-server-todo-app
     depends_on:
     - cockroachdb
