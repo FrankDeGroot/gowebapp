@@ -37,7 +37,7 @@ func Connect() {
 }
 
 func retry[T any](sleep int, attempts int, f func() (T, error)) (result T, err error) {
-	for i := 0; i < 10; i++ {
+	for i := 0; i < attempts; i++ {
 		if i > 0 {
 			log.Println("retrying after error:", err)
 			time.Sleep(time.Duration(sleep) * time.Second)
