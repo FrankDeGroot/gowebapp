@@ -53,7 +53,7 @@ export async function list(list) {
         if (form === newForm) return
         if (elm.name === 'delete') {
             await del(form.id.value)
-            reload()
+            list.removeChild(form)
         }
     })
     reload()
