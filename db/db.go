@@ -81,7 +81,7 @@ func Delete(id string) error {
 func GetOne(id string) (*dto.SavedToDo, error) {
 	var description string
 	var done bool
-	err := pool.QueryRow(context.Background(), "select description, done from todos where id=$1", id).Scan(&description, &done)
+	err := pool.QueryRow(context.Background(), "select description, done from todos where id = $1", id).Scan(&description, &done)
 	switch err {
 	case nil:
 		return &dto.SavedToDo{Id: id, ToDo: dto.ToDo{Description: description, Done: done}}, nil
