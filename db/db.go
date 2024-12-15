@@ -29,7 +29,7 @@ func Connect() {
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
-	if _, err := retry(1, 10, func() (pgconn.CommandTag, error) {
+	if _, err := retry(1, 5, func() (pgconn.CommandTag, error) {
 		return pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)")
 	}); err != nil {
 		log.Fatalf("Unable to create table: %v\n", err)
