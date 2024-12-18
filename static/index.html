@@ -7,7 +7,7 @@
     </head>
     <body>
         <h1>To Do App <span id="status"></span></h1>
-        <div id="todos">
+        <thing-list id="todo" data-path="/api/todos">
             <template>
                 <form>
                     <input type="hidden" name="id">
@@ -21,7 +21,7 @@
                 <input name="description" placeholder="description">
                 <input type="submit" value="➕">
             </form>
-        </div>
+        </thing-list>
         <script src="index.js" type="module"></script>
     </body>
 </html>

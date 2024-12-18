@@ -1,3 +1,1 @@
-import { list } from './list.js'
-
-list(document.getElementById('todos'))
+import * as list from './list.js'
