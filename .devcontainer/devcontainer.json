@@ -1,4 +1,8 @@
 {
+    "containerEnv": {
+        "SHELL": "/bin/bash"
+    },
+    "containerUser": "vscode",
     "customizations": {
         "vscode": {
             "extensions": [
@@ -15,7 +19,8 @@
     "forwardPorts": [ 8000 ],
     "postCreateCommand": {
         "delve": "go install -v github.com/go-delve/delve/cmd/dlv@latest",
-        "git": "git config --global --add safe.directory /todo-app",
+        "git": "git config --global --add safe.directory /todo-app"
     },
+    "updateRemoteUserUID": true,
     "workspaceFolder": "/todo-app"
 }
