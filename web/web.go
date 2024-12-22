@@ -75,6 +75,7 @@ func delete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error deleting todo: %v\n", err)
 	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func encode(w http.ResponseWriter, a any) error {
