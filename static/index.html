@@ -6,19 +6,19 @@
         <link rel="stylesheet" href="index.css"/>
     </head>
     <body>
-        <h1>To Do App <span id="status"></span></h1>
-        <thing-list id="todo" data-path="/api/todos">
+        <h1>To Do App <status-badge></status-badge></h1>
+        <thing-list id="todos" data-path="/api/todos">
             <template>
                 <form>
                     <input type="hidden" name="id">
                     <input type="checkbox" name="done">
                     <label for="done"></label>
-                    <input name="description" placeholder="description">
+                    <input name="description" placeholder="description" required>
                     <input type="button" value="❌" name="delete">
                 </form>
             </template>
             <form class="new">
-                <input name="description" placeholder="description">
+                <input name="description" placeholder="description" required>
                 <input type="submit" value="➕">
             </form>
         </thing-list>
