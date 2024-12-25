@@ -17,8 +17,7 @@ customElements.define('thing-list',
             })
             this.addEventListener('input', e => {
                 const form = e.target.closest('form')
-                if (form === this.#newForm) return
-                this.#markPut(form)
+                if (form !== this.#newForm) this.#markPut(form)
             })
             this.addEventListener('click', async e => {
                 const elm = e.target
