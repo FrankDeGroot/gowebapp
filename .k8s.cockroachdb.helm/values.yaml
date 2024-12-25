@@ -1,0 +1,4 @@
+statefulset:
+  replicas: 3
+tls:
+  enabled: false
