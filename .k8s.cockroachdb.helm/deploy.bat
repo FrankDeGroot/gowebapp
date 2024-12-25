@@ -1,3 +1,4 @@
+kind create cluster
 rem CockroachDB Helm Chart
 helm repo add cockroachdb https://charts.cockroachdb.com/
 helm repo update
