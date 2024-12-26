@@ -1,2 +1,2 @@
-import './thing-list.js'
+import './obj-list.js'
 import './status-badge.js'

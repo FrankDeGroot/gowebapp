@@ -44,8 +44,8 @@ metadata:
   name: todo-app
 spec:
   ports:
-    - name: web
-      port: 8000
-      targetPort: 8000
+  - name: web
+    port: 8000
+    targetPort: 8000
   selector:
     io.kompose.service: todo-app

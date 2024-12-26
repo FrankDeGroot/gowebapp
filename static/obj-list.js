@@ -1,4 +1,4 @@
-customElements.define('thing-list',
+customElements.define('obj-list',
     class extends HTMLElement {
         #template = this.querySelector("template")
         #newForm = this.querySelector(".new")
@@ -40,9 +40,9 @@ customElements.define('thing-list',
                 this.#error()
             }
             const ids = new Set()
-            for (const thing of await response.json()) {
-                ids.add(thing.id)
-                this.#toForm(thing)
+            for (const obj of await response.json()) {
+                ids.add(obj.id)
+                this.#toForm(obj)
             }
             for (const form of this.querySelectorAll('form:not(.new)')) {
                 if (!ids.has(form.id.value)) {
@@ -68,8 +68,8 @@ customElements.define('thing-list',
             }
         }
 
-        #getForm(thing) {
-            const formId = this.id + thing.id
+        #getForm(obj) {
+            const formId = this.id + obj.id
             const form = document.getElementById(formId) ?? this.#template.content.cloneNode(true).children[0]
             if (!form.getAttribute('id')) this.insertBefore(form, this.#newForm)
             form.id = formId
