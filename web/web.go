@@ -2,7 +2,6 @@ package web
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"todo-app/db"
@@ -10,9 +9,8 @@ import (
 )
 
 func Serve() {
-	fmt.Println("Starting web server")
-	fileServer := http.FileServer(http.Dir("./static"))
-	http.Handle("/", fileServer)
+	log.Println("Starting web server")
+	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("GET /api/todos", getAll)
 	http.HandleFunc("GET /api/todos/{id}", getOne)
 	http.HandleFunc("POST /api/todos", post)
@@ -67,7 +65,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error putting todo: %v\n", err)
 	}
-	encode(w, toDo)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func delete(w http.ResponseWriter, r *http.Request) {

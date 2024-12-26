@@ -85,7 +85,7 @@ customElements.define('obj-list',
         }
 
         async #post(form) {
-            return await this.#save('POST', form)
+            return await (await this.#save('POST', form)).json()
         }
 
         async #del(id) {
@@ -112,7 +112,7 @@ customElements.define('obj-list',
             })
             if (response.ok) {
                 this.#done()
-                return await response.json()
+                return response
             } else {
                 this.#error()
                 throw "Error saving"
