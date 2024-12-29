@@ -8,15 +8,22 @@ import (
 	"todo-app/dto"
 )
 
+const CONTENT_TYPE_JSON = "application/json;charset=utf-8"
+const TODO_PATH = "/api/todos"
+
 func Serve() {
 	log.Println("Starting web server")
-	http.Handle("/", http.FileServer(http.Dir("./static")))
-	http.HandleFunc("GET /api/todos", getAll)
-	http.HandleFunc("GET /api/todos/{id}", getOne)
-	http.HandleFunc("POST /api/todos", post)
-	http.HandleFunc("PUT /api/todos", put)
-	http.HandleFunc("DELETE /api/todos/{id}", delete)
+	registerHandlers()
 	http.ListenAndServe(":8000", nil)
+}
+
+func registerHandlers() {
+	http.Handle("/", http.FileServer(http.Dir("./static")))
+	http.HandleFunc("GET "+TODO_PATH, getAll)
+	http.HandleFunc("GET "+TODO_PATH+"/{id}", getOne)
+	http.HandleFunc("POST "+TODO_PATH, post)
+	http.HandleFunc("PUT "+TODO_PATH, put)
+	http.HandleFunc("DELETE "+TODO_PATH+"/{id}", delete)
 }
 
 func getAll(w http.ResponseWriter, r *http.Request) {
@@ -77,6 +84,6 @@ func delete(w http.ResponseWriter, r *http.Request) {
 }
 
 func encode(w http.ResponseWriter, a any) error {
-	w.Header().Set("Content-Type", "application/json;charset=utf-8")
+	w.Header().Set("Content-Type", CONTENT_TYPE_JSON)
 	return json.NewEncoder(w).Encode(a)
 }

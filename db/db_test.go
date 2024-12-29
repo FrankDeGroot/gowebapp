@@ -47,6 +47,7 @@ func TestInsertDelete(t *testing.T) {
 			if todo.Done != toDo.Done {
 				t.Errorf("Wanted %v got %v", toDo.Done, todo.Done)
 			}
+			break
 		}
 	}
 	if !found {
