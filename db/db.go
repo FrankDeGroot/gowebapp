@@ -3,15 +3,13 @@ package db
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
-	"time"
 	"todo-app/dto"
 
+	"github.com/cockroachdb/cockroach-go/v2/crdb"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -29,26 +27,12 @@ func Connect() {
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
-	if _, err := retry(1, 5, func() (pgconn.CommandTag, error) {
-		return pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)")
+	if err := crdb.Execute(func() error {
+		_, err := pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)")
+		return err
 	}); err != nil {
 		log.Fatalf("Unable to create table: %v\n", err)
 	}
-}
-
-func retry[T any](sleep int, attempts int, f func() (T, error)) (result T, err error) {
-	for i := 0; i < attempts; i++ {
-		if i > 0 {
-			log.Println("retrying after error:", err)
-			time.Sleep(time.Duration(sleep) * time.Second)
-			sleep *= 2
-		}
-		result, err = f()
-		if err == nil {
-			return result, nil
-		}
-	}
-	return result, fmt.Errorf("after %d attempts, last error: %s", attempts, err)
 }
 
 func Close() {
