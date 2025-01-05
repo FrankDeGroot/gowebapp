@@ -6,10 +6,11 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 	"todo-app/dto"
 
-	"github.com/cockroachdb/cockroach-go/v2/crdb"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -27,9 +28,8 @@ func Connect() {
 	if err != nil {
 		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
-	if err := crdb.Execute(func() error {
-		_, err := pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)")
-		return err
+	if _, err := retry(10, 1*time.Second, func() (pgconn.CommandTag, error) {
+		return pool.Exec(context.Background(), "create table if not exists todos (id serial primary key, description varchar, done boolean)")
 	}); err != nil {
 		log.Fatalf("Unable to create table: %v\n", err)
 	}
