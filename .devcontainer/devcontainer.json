@@ -2,7 +2,6 @@
     "containerEnv": {
         "SHELL": "/bin/bash"
     },
-    "containerUser": "vscode",
     "customizations": {
         "vscode": {
             "extensions": [
