@@ -46,7 +46,7 @@ input[type="checkbox"]:not(:checked) + label::before {
   color: transparent;
 }
 
-obj-list {
+form-list {
   display: grid;
   grid-template-columns: 2em minmax(auto, 100em) 2em;
 

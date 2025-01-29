@@ -1,4 +1,4 @@
-customElements.define('obj-list',
+customElements.define('form-list',
     class extends HTMLElement {
         #template = this.querySelector("template")
         #newForm = this.querySelector(".new")

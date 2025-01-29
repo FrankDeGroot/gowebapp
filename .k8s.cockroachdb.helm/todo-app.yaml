@@ -1,9 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yaml
-    kompose.version: 1.34.0 (cbf2835db)
   labels:
     io.kompose.service: todo-app
   name: todo-app
@@ -14,9 +11,6 @@ spec:
       io.kompose.service: todo-app
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert -f docker-compose.yaml
-        kompose.version: 1.34.0 (cbf2835db)
       labels:
         io.kompose.service: todo-app
     spec:
@@ -24,7 +18,7 @@ spec:
       - env:
         - name: DATABASE_URL
           value: postgres://root@cockroachdb:26257/defaultdb
-        image: localhost/todo-app:latest
+        image: todo-app:latest
         imagePullPolicy: IfNotPresent
         name: web-server-todo-app
         ports:
@@ -36,9 +30,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert -f docker-compose.yaml
-    kompose.version: 1.34.0 (cbf2835db)
   labels:
     io.kompose.service: todo-app
   name: todo-app
