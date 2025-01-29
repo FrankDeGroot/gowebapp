@@ -1,0 +1,4 @@
+#!/bin/bash
+kind load docker-image todo-app:latest
+kubectl apply -f .
+kubectl port-forward service/todo-app 8000:8000
