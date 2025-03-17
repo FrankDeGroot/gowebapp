@@ -1,12 +1,21 @@
 package db
 
 import (
+	"os"
 	"testing"
 	"time"
 	"todo-app/dto"
+
+	"github.com/cockroachdb/cockroach-go/v2/testserver"
 )
 
 func TestInsertDelete(t *testing.T) {
+	ts, err := testserver.NewTestServer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ts.Stop()
+	os.Setenv("DATABASE_URL", ts.PGURL().String())
 	Connect()
 	defer Close()
 
