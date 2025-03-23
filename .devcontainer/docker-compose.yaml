@@ -5,6 +5,7 @@ services:
     - cockroachdb
     environment:
     - DATABASE_URL=postgres://root@cockroachdb:26257/defaultdb
+    - KAFKA_BROKER=redpanda-0:9092
     hostname: golang
     image: golang:latest
     ports:
