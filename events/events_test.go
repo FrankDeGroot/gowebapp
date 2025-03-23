@@ -5,11 +5,6 @@ import (
 	"todo-app/dto"
 )
 
-func TestBluppie(t *testing.T) {
-	defer t.Log("a")
-	defer t.Log("b")
-}
-
 func TestProduceConsume(t *testing.T) {
 	prodCh, err := TodoProducer()
 	if err != nil {
