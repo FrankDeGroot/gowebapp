@@ -11,7 +11,7 @@ func TestProduceConsume(t *testing.T) {
 		t.Fail()
 	}
 	defer close(prodCh)
-	quitCh := make(chan bool)
+	quitCh := make(chan struct{})
 	defer close(quitCh)
 	consCh, err := TodoConsumer(quitCh)
 	if err != nil {
@@ -29,5 +29,5 @@ func TestProduceConsume(t *testing.T) {
 	if todo.Description != "test" {
 		t.Errorf("Wanted %v got %v", "test", todo.Description)
 	}
-	quitCh <- true
+	quitCh <- struct{}{}
 }

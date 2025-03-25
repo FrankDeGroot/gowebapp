@@ -12,7 +12,7 @@ import (
 
 var c *kafka.Consumer
 
-func TodoConsumer(quit chan bool) (chan dto.SavedToDo, error) {
+func TodoConsumer(quit chan struct{}) (chan dto.SavedToDo, error) {
 	var err error
 	c, err = kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": os.Getenv("KAFKA_BROKER"),
