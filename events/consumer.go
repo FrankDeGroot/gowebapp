@@ -41,7 +41,6 @@ func TodoConsumer(quit chan bool) (chan dto.SavedToDo, error) {
 				todo := dto.SavedToDo{}
 				err := json.Unmarshal(msg.Value, &todo)
 				if err != nil {
-					close(ch)
 					log.Fatalf("Unable to unmarshal %v", msg.Value)
 				}
 				ch <- todo
