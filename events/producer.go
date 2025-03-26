@@ -10,17 +10,20 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
-var p *kafka.Producer
+type ToDoProducer struct {
+	p  *kafka.Producer
+	ch chan dto.SavedToDo
+}
 
-func TodoProducer() (chan dto.SavedToDo, error) {
+func NewToDoProducer() (*ToDoProducer, error) {
+	tp := ToDoProducer{nil, make(chan dto.SavedToDo)}
 	var err error
-	p, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_BROKER")})
+	tp.p, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_BROKER")})
 	if err != nil {
 		return nil, err
 	}
-	ch := make(chan dto.SavedToDo)
 	go func() {
-		for e := range p.Events() {
+		for e := range tp.p.Events() {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
@@ -32,13 +35,13 @@ func TodoProducer() (chan dto.SavedToDo, error) {
 		}
 	}()
 	go func() {
-		defer p.Close()
-		for todo := range ch {
+		defer tp.p.Close()
+		for todo := range tp.ch {
 			todoJSON, err := json.Marshal(todo)
 			if err != nil {
 				log.Fatalf("Failed to encode todo to JSON: %v\n", err)
 			}
-			err = p.Produce(&kafka.Message{
+			err = tp.p.Produce(&kafka.Message{
 				TopicPartition: kafka.TopicPartition{
 					Topic:     &toDoTopic,
 					Partition: kafka.PartitionAny,
@@ -50,7 +53,15 @@ func TodoProducer() (chan dto.SavedToDo, error) {
 				log.Fatalf("Error producing message: %v\n", err)
 			}
 		}
-		p.Flush(15 * 1000)
+		tp.p.Flush(500)
 	}()
-	return ch, nil
+	return &tp, nil
+}
+
+func (tp *ToDoProducer) Produce(toDo dto.SavedToDo) {
+	tp.ch <- toDo
+}
+
+func (tp *ToDoProducer) Close() {
+	close(tp.ch)
 }

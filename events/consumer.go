@@ -10,11 +10,16 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
-var c *kafka.Consumer
+type ToDoConsumer struct {
+	c    *kafka.Consumer
+	quit chan struct{}
+	ch   chan dto.SavedToDo
+}
 
-func TodoConsumer(quit chan struct{}) (chan dto.SavedToDo, error) {
+func NewToDoConsumer() (*ToDoConsumer, error) {
+	tc := ToDoConsumer{nil, make(chan struct{}), make(chan dto.SavedToDo)}
 	var err error
-	c, err = kafka.NewConsumer(&kafka.ConfigMap{
+	tc.c, err = kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": os.Getenv("KAFKA_BROKER"),
 		"group.id":          toDoTopic,
 		"auto.offset.reset": "earliest",
@@ -22,32 +27,39 @@ func TodoConsumer(quit chan struct{}) (chan dto.SavedToDo, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = c.Subscribe(toDoTopic, nil)
+	err = tc.c.Subscribe(toDoTopic, nil)
 	if err != nil {
 		return nil, err
 	}
-	ch := make(chan dto.SavedToDo)
 	go func() {
-		defer c.Close()
-		defer close(ch)
+		defer tc.c.Close()
+		defer close(tc.ch)
 		for {
 			select {
-			case <-quit:
+			case <-tc.quit:
 				return
 			default:
 			}
-			msg, err := c.ReadMessage(time.Second)
+			msg, err := tc.c.ReadMessage(time.Second)
 			if err == nil {
 				todo := dto.SavedToDo{}
 				err := json.Unmarshal(msg.Value, &todo)
 				if err != nil {
 					log.Fatalf("Unable to unmarshal %v", msg.Value)
 				}
-				ch <- todo
+				tc.ch <- todo
 			} else if !err.(kafka.Error).IsTimeout() {
 				log.Fatalf("Consumer error: %v\n", err)
 			}
 		}
 	}()
-	return ch, nil
+	return &tc, nil
+}
+
+func (tc *ToDoConsumer) Receive() dto.SavedToDo {
+	return <-tc.ch
+}
+
+func (tc *ToDoConsumer) Stop() {
+	tc.quit <- struct{}{}
 }
