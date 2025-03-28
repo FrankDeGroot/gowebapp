@@ -2,8 +2,6 @@ package events
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"os"
 	"todo-app/dto"
 
@@ -11,57 +9,46 @@ import (
 )
 
 type ToDoProducer struct {
-	p  *kafka.Producer
-	ch chan dto.SavedToDo
+	producer *kafka.Producer
+	topic    string
 }
 
-func NewToDoProducer() (*ToDoProducer, error) {
-	tp := ToDoProducer{nil, make(chan dto.SavedToDo)}
+func NewToDoProducer(topic string) (*ToDoProducer, error) {
+	tp := ToDoProducer{nil, topic}
 	var err error
-	tp.p, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_BROKER")})
+	tp.producer, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_BROKER")})
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		for e := range tp.p.Events() {
-			switch ev := e.(type) {
-			case *kafka.Message:
-				if ev.TopicPartition.Error != nil {
-					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
-				} else {
-					fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
-				}
-			}
-		}
-	}()
-	go func() {
-		defer tp.p.Close()
-		for todo := range tp.ch {
-			todoJSON, err := json.Marshal(todo)
-			if err != nil {
-				log.Fatalf("Failed to encode todo to JSON: %v\n", err)
-			}
-			err = tp.p.Produce(&kafka.Message{
-				TopicPartition: kafka.TopicPartition{
-					Topic:     &toDoTopic,
-					Partition: kafka.PartitionAny,
-				},
-				Key:   []byte(todo.Id),
-				Value: todoJSON,
-			}, nil)
-			if err != nil {
-				log.Fatalf("Error producing message: %v\n", err)
-			}
-		}
-		tp.p.Flush(500)
-	}()
 	return &tp, nil
 }
 
-func (tp *ToDoProducer) Produce(toDo dto.SavedToDo) {
-	tp.ch <- toDo
+func (tp *ToDoProducer) Produce(toDo dto.SavedToDo) error {
+	toDoJson, err := json.Marshal(toDo)
+	if err != nil {
+		return err
+	}
+	deliveryChan := make(chan kafka.Event)
+	err = tp.producer.Produce(&kafka.Message{
+		TopicPartition: kafka.TopicPartition{
+			Topic:     &tp.topic,
+			Partition: kafka.PartitionAny,
+		},
+		Key:   []byte(toDo.Id),
+		Value: toDoJson,
+	}, deliveryChan)
+	if err != nil {
+		return err
+	}
+	e := <-deliveryChan
+	switch ev := e.(type) {
+	case *kafka.Message:
+		return ev.TopicPartition.Error
+	}
+	return nil
 }
 
 func (tp *ToDoProducer) Close() {
-	close(tp.ch)
+	tp.producer.Flush(500)
+	tp.producer.Close()
 }

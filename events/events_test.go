@@ -7,26 +7,33 @@ import (
 )
 
 func TestProduceConsume(t *testing.T) {
-	p, err := NewToDoProducer()
+	topic := "todo" + time.Now().Format("_2006_01_02_15_04_05")
+	t.Log(topic)
+	p, err := NewToDoProducer(topic)
 	if err != nil {
-		t.Fail()
+		t.Fatal(err)
 	}
 	defer p.Close()
-	c, err := NewToDoConsumer()
+	c, err := NewToDoConsumer(topic, topic)
 	if err != nil {
-		t.Fail()
+		t.Fatal(err)
 	}
-	defer c.Stop()
-	p.Produce(dto.SavedToDo{
+	defer c.Close()
+	err = p.Produce(dto.SavedToDo{
 		Id: "123",
 		ToDo: dto.ToDo{
 			Description: "test",
 			Done:        false,
 		},
 	})
-	time.Sleep(time.Second)
-	todo := c.Receive()
+	if err != nil {
+		t.Fatal(err)
+	}
+	todo, err := c.Consume()
+	if err != nil {
+		t.Fatal(err)
+	}
 	if todo.Description != "test" {
-		t.Errorf("Wanted %v got %v", "test", todo.Description)
+		t.Fatalf("Wanted %v got %v", "test", todo.Description)
 	}
 }
