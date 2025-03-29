@@ -2,6 +2,7 @@ package producer
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 	"todo-app/dto"
 
@@ -20,7 +21,11 @@ func Connect(producerTopic string) error {
 	return err
 }
 
-func Produce(toDo dto.SavedToDo) error {
+func Produce(toDo *dto.SavedToDo) error {
+	if producer == nil {
+		log.Printf("Producer not connected\n")
+		return nil
+	}
 	toDoJson, err := json.Marshal(toDo)
 	if err != nil {
 		return err

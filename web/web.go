@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"todo-app/db"
 	"todo-app/dto"
+	"todo-app/events/producer"
 )
 
 const CONTENT_TYPE_JSON = "application/json;charset=utf-8"
@@ -60,6 +61,10 @@ func post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error posting todo: %v\n", err)
 	}
+	err = producer.Produce(savedToDo)
+	if err != nil {
+		log.Printf("Error producing todo: %v\n", err)
+	}
 	encode(w, savedToDo)
 }
 
@@ -72,13 +77,20 @@ func put(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error putting todo: %v\n", err)
 	}
+	if err := producer.Produce(&toDo); err != nil {
+		log.Printf("Error producing todo: %v\n", err)
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func delete(w http.ResponseWriter, r *http.Request) {
-	if err := db.Delete(r.PathValue("id")); err != nil {
+	id := r.PathValue("id")
+	if err := db.Delete(id); err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error deleting todo: %v\n", err)
+	}
+	if err := producer.Produce(&dto.SavedToDo{Id: id}); err != nil {
+		log.Printf("Error producing todo: %v\n", err)
 	}
 	w.WriteHeader(http.StatusNoContent)
 }
