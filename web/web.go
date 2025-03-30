@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 	"todo-app/db"
 	"todo-app/dto"
 	"todo-app/events/consumer"
@@ -17,9 +18,38 @@ import (
 const CONTENT_TYPE_JSON = "application/json;charset=utf-8"
 const TODO_PATH = "/api/todos"
 
+var wsConn = make([]*websocket.Conn, 0)
+
 func Serve() {
 	log.Println("Starting web server")
 	registerHandlers()
+	go func() {
+		for {
+			if len(wsConn) == 0 {
+				time.Sleep(time.Second)
+				continue
+			}
+			todo, err := consumer.Consume()
+			if err != nil {
+				log.Printf("Error consuming todo: %v\n", err)
+			}
+			if todo == nil {
+				continue
+			}
+			newWsConn := make([]*websocket.Conn, 0)
+			for _, c := range wsConn {
+				log.Printf("Sending todo event")
+				err = wsjson.Write(context.Background(), c, todo)
+				if err != nil {
+					log.Printf("Error writing to socket: %v", err)
+				} else {
+					newWsConn = append(wsConn, c)
+				}
+			}
+			wsConn = newWsConn
+			log.Printf("Sent events successfully to %v connections", len(wsConn))
+		}
+	}()
 	http.ListenAndServe(":8000", nil)
 }
 
@@ -108,18 +138,8 @@ func getEvents(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error accepting websocket: %v\n", err)
 	}
-	log.Printf("Websocket connected")
-	for {
-		todo, err := consumer.Consume()
-		if err != nil {
-			log.Printf("Error consuming todo: %v\n", err)
-		}
-		log.Printf("Sending todo event")
-		err = wsjson.Write(context.Background(), c, todo)
-		if err != nil {
-			log.Fatalf("Error writing to socket: %v", err)
-		}
-	}
+	wsConn = append(wsConn, c)
+	log.Printf("Websocket connected %v connections", len(wsConn))
 }
 
 func encode(w http.ResponseWriter, a any) error {
