@@ -1,12 +1,17 @@
 package web
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"todo-app/db"
 	"todo-app/dto"
+	"todo-app/events/consumer"
 	"todo-app/events/producer"
+
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 )
 
 const CONTENT_TYPE_JSON = "application/json;charset=utf-8"
@@ -25,6 +30,7 @@ func registerHandlers() {
 	http.HandleFunc("POST "+TODO_PATH, post)
 	http.HandleFunc("PUT "+TODO_PATH, put)
 	http.HandleFunc("DELETE "+TODO_PATH+"/{id}", delete)
+	http.HandleFunc("GET /ws/todos", getEvents)
 }
 
 func getAll(w http.ResponseWriter, r *http.Request) {
@@ -93,6 +99,27 @@ func delete(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error producing todo: %v\n", err)
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func getEvents(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Getting events")
+	c, err := websocket.Accept(w, r, nil)
+	if err != nil {
+		http.Error(w, "Error", http.StatusInternalServerError)
+		log.Printf("Error accepting websocket: %v\n", err)
+	}
+	log.Printf("Websocket connected")
+	for {
+		todo, err := consumer.Consume()
+		if err != nil {
+			log.Printf("Error consuming todo: %v\n", err)
+		}
+		log.Printf("Sending todo event")
+		err = wsjson.Write(context.Background(), c, todo)
+		if err != nil {
+			log.Fatalf("Error writing to socket: %v", err)
+		}
+	}
 }
 
 func encode(w http.ResponseWriter, a any) error {
