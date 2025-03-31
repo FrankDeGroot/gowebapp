@@ -43,7 +43,7 @@ func Serve() {
 				if err != nil {
 					log.Printf("Error writing to socket: %v", err)
 				} else {
-					newWsConn = append(wsConn, c)
+					newWsConn = append(newWsConn, c)
 				}
 			}
 			wsConn = newWsConn
