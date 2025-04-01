@@ -28,11 +28,11 @@ func Connect(topic string, name string) error {
 	return nil
 }
 
-func Consume() (*dto.SavedToDo, error) {
+func Consume() (*dto.ToDoEvent, error) {
 	for {
 		msg, err := consumer.ReadMessage(time.Second)
 		if err == nil {
-			todo := dto.SavedToDo{}
+			todo := dto.ToDoEvent{}
 			err := json.Unmarshal(msg.Value, &todo)
 			if err != nil {
 				return nil, err

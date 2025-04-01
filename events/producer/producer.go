@@ -21,7 +21,7 @@ func Connect(producerTopic string) error {
 	return err
 }
 
-func Produce(toDo *dto.SavedToDo) error {
+func Produce(toDo *dto.ToDoEvent) error {
 	if producer == nil {
 		log.Printf("Producer not connected\n")
 		return nil

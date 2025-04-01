@@ -4,8 +4,19 @@ customElements.define('form-list',
         #newForm = this.querySelector(".new")
         #marked = new Set()
         #path = this.dataset.path
+        #prefix = this.dataset.prefix
 
         connectedCallback() {
+            document.addEventListener(`${this.#prefix}:add`, e => {
+                this.#toForm(e.detail)
+            })
+            document.addEventListener(`${this.#prefix}:change`, e => {
+                this.#toForm(e.detail)
+            })
+            document.addEventListener(`${this.#prefix}:delete`, e => {
+                const form = this.querySelector(`form[id='${this.#formId(e.detail)}'`)
+                form && this.removeChild(form)
+            })
             this.addEventListener('submit', async e => {
                 e.preventDefault()
                 if (e.target === this.#newForm) {
@@ -69,11 +80,15 @@ customElements.define('form-list',
         }
 
         #getForm(obj) {
-            const formId = this.id + obj.id
+            const formId = this.#formId(obj)
             const form = document.getElementById(formId) ?? this.#template.content.cloneNode(true).children[0]
             if (!form.getAttribute('id')) this.insertBefore(form, this.#newForm)
             form.id = formId
             return form
+        }
+
+        #formId(obj) {
+            return this.id + obj.id
         }
 
         #markPut(form) {

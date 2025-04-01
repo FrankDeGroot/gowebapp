@@ -97,7 +97,10 @@ func post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error posting todo: %v\n", err)
 	}
-	err = producer.Produce(savedToDo)
+	err = producer.Produce(&dto.ToDoEvent{
+		Action:    dto.ActionAdd,
+		SavedToDo: *savedToDo,
+	})
 	if err != nil {
 		log.Printf("Error producing todo: %v\n", err)
 	}
@@ -113,7 +116,10 @@ func put(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error putting todo: %v\n", err)
 	}
-	if err := producer.Produce(&toDo); err != nil {
+	if err := producer.Produce(&dto.ToDoEvent{
+		Action:    dto.ActionChg,
+		SavedToDo: toDo,
+	}); err != nil {
 		log.Printf("Error producing todo: %v\n", err)
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -125,7 +131,10 @@ func delete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error deleting todo: %v\n", err)
 	}
-	if err := producer.Produce(&dto.SavedToDo{Id: id}); err != nil {
+	if err := producer.Produce(&dto.ToDoEvent{
+		Action:    dto.ActionDel,
+		SavedToDo: dto.SavedToDo{Id: id},
+	}); err != nil {
 		log.Printf("Error producing todo: %v\n", err)
 	}
 	w.WriteHeader(http.StatusNoContent)

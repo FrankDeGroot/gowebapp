@@ -22,11 +22,14 @@ func TestProduceConsume(t *testing.T) {
 	}
 	defer consumer.Close()
 	defer admin.DeleteTopic(topic)
-	if err := producer.Produce(&dto.SavedToDo{
-		Id: "123",
-		ToDo: dto.ToDo{
-			Description: "test",
-			Done:        false,
+	if err := producer.Produce(&dto.ToDoEvent{
+		Action: dto.ActionAdd,
+		SavedToDo: dto.SavedToDo{
+			Id: "123",
+			ToDo: dto.ToDo{
+				Description: "test",
+				Done:        false,
+			},
 		},
 	}); err != nil {
 		t.Fatal(err)
