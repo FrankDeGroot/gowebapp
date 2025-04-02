@@ -30,10 +30,10 @@ function connect() {
   }
 
   socket.onclose = event => {
-    const wait = timeout + (Math.random() - .5) * timeout / 10
-    console.log("Disconnected, waiting", wait, "ms to reconnect.")
     socket.onmessage = null
     socket.onclose = null
+    const wait = timeout + (Math.random() - .5) * timeout / 10
+    console.log("Disconnected, waiting", wait, "ms to reconnect.")
     setTimeout(() => {
       console.log("Reconnecting")
       connect();
