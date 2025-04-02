@@ -15,7 +15,7 @@ customElements.define('form-list',
             })
             document.addEventListener(`${this.#prefix}:delete`, e => {
                 const form = this.querySelector(`form[id='${this.#formId(e.detail)}'`)
-                form && this.removeChild(form)
+                if (form) this.removeChild(form)
             })
             this.addEventListener('submit', async e => {
                 e.preventDefault()
@@ -36,7 +36,11 @@ customElements.define('form-list',
                 if (form === this.#newForm) return
                 if (elm.name === 'delete') {
                     await this.#del(form.id.value)
-                    this.removeChild(form)
+                    try {
+                        this.removeChild(form)
+                    } catch(err) {
+                        if (err.name !== 'NotFoundError') throw err
+                    }
                 }
             })
             this.#reload()
