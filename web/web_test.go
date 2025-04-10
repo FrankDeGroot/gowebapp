@@ -15,7 +15,7 @@ func TestGetOne(t *testing.T) {
 	db.Connect()
 	defer db.Close()
 
-	registerHandlers()
+	setHandlers()
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 

@@ -17,11 +17,11 @@ var notifier ws.Notifier = NoNotify{}
 func Serve() {
 	notifier = ws.Notify{}
 	log.Println("Starting web server")
-	registerHandlers()
+	setHandlers()
 	http.ListenAndServe(":8000", nil)
 }
 
-func registerHandlers() {
+func setHandlers() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("GET "+TODO_PATH, getAll)
 	http.HandleFunc("GET "+TODO_PATH+"/{id}", getOne)
