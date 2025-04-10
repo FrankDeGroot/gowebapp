@@ -1,55 +1,23 @@
 package web
 
 import (
-	"context"
 	"encoding/json"
 	"log"
 	"net/http"
-	"time"
 	"todo-app/db"
 	"todo-app/dto"
-	"todo-app/events/consumer"
-	"todo-app/events/producer"
-
-	"github.com/coder/websocket"
-	"github.com/coder/websocket/wsjson"
+	"todo-app/ws"
 )
 
 const CONTENT_TYPE_JSON = "application/json;charset=utf-8"
 const TODO_PATH = "/api/todos"
 
-var wsConn = make([]*websocket.Conn, 0)
+var notifier ws.Notifier = NoNotify{}
 
 func Serve() {
+	notifier = ws.Notify{}
 	log.Println("Starting web server")
 	registerHandlers()
-	go func() {
-		for {
-			if len(wsConn) == 0 {
-				time.Sleep(time.Second)
-				continue
-			}
-			todo, err := consumer.Consume()
-			if err != nil {
-				log.Printf("Error consuming todo: %v\n", err)
-			}
-			if todo == nil {
-				continue
-			}
-			newWsConn := make([]*websocket.Conn, 0)
-			for _, c := range wsConn {
-				log.Printf("Sending todo event")
-				err = wsjson.Write(context.Background(), c, todo)
-				if err != nil {
-					log.Printf("Error writing to socket: %v", err)
-				} else {
-					newWsConn = append(newWsConn, c)
-				}
-			}
-			wsConn = newWsConn
-			log.Printf("Sent events successfully to %v connections", len(wsConn))
-		}
-	}()
 	http.ListenAndServe(":8000", nil)
 }
 
@@ -60,7 +28,6 @@ func registerHandlers() {
 	http.HandleFunc("POST "+TODO_PATH, post)
 	http.HandleFunc("PUT "+TODO_PATH, put)
 	http.HandleFunc("DELETE "+TODO_PATH+"/{id}", delete)
-	http.HandleFunc("GET /ws/todos", getEvents)
 }
 
 func getAll(w http.ResponseWriter, r *http.Request) {
@@ -97,13 +64,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error posting todo: %v\n", err)
 	}
-	err = producer.Produce(&dto.ToDoEvent{
-		Action:    dto.ActionAdd,
-		SavedToDo: *savedToDo,
-	})
-	if err != nil {
-		log.Printf("Error producing todo: %v\n", err)
-	}
+	notifier.Add(savedToDo)
 	encode(w, savedToDo)
 }
 
@@ -116,12 +77,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error putting todo: %v\n", err)
 	}
-	if err := producer.Produce(&dto.ToDoEvent{
-		Action:    dto.ActionChg,
-		SavedToDo: toDo,
-	}); err != nil {
-		log.Printf("Error producing todo: %v\n", err)
-	}
+	notifier.Change(&toDo)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -131,24 +87,8 @@ func delete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error deleting todo: %v\n", err)
 	}
-	if err := producer.Produce(&dto.ToDoEvent{
-		Action:    dto.ActionDel,
-		SavedToDo: dto.SavedToDo{Id: id},
-	}); err != nil {
-		log.Printf("Error producing todo: %v\n", err)
-	}
+	notifier.Delete(&dto.SavedToDo{Id: id})
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func getEvents(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Getting events")
-	c, err := websocket.Accept(w, r, nil)
-	if err != nil {
-		http.Error(w, "Error", http.StatusInternalServerError)
-		log.Printf("Error accepting websocket: %v\n", err)
-	}
-	wsConn = append(wsConn, c)
-	log.Printf("Websocket connected %v connections", len(wsConn))
 }
 
 func encode(w http.ResponseWriter, a any) error {
