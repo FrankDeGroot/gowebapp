@@ -1,64 +1,64 @@
 @media (prefers-color-scheme: light) {
-  body {
-    --background-color: white;
-    --color: black;
-  }
+	body {
+		--background-color: white;
+		--color: black;
+	}
 }
 
 @media (prefers-color-scheme: dark) {
-  body {
-    --background-color: black;
-    --color: white;
-  }
+	body {
+		--background-color: black;
+		--color: white;
+	}
 }
 
 body {
-  background-color: var(--background-color);
-  color: var(--color);
-  font-family: sans-serif;
+	background-color: var(--background-color);
+	color: var(--color);
+	font-family: sans-serif;
 }
 
 input {
-  background-color: inherit;
-  border: none;
-  color: inherit;
-  font: inherit;
+	background-color: inherit;
+	border: none;
+	color: inherit;
+	font: inherit;
 }
 
 input[type="checkbox"] {
-  height: 0;
-  margin: 0;
-  width: 0;
+	height: 0;
+	margin: 0;
+	width: 0;
 }
 
-input[type="checkbox"] + label::before {
-  outline: 1px solid transparent;
-  content: '✔️';
-  padding: 4px 4px 4px 4px;
+input[type="checkbox"]+label::before {
+	outline: 1px solid transparent;
+	content: '✔️';
+	padding: 4px 4px 4px 4px;
 }
 
-input[type="checkbox"]:focus + label::before {
-  outline-color: var(--color);
-  border-radius: 4px;
+input[type="checkbox"]:focus+label::before {
+	outline-color: var(--color);
+	border-radius: 4px;
 }
 
-input[type="checkbox"]:not(:checked) + label::before {
-  color: transparent;
+input[type="checkbox"]:not(:checked)+label::before {
+	color: transparent;
 }
 
 form-list {
-  display: grid;
-  grid-template-columns: 2em minmax(auto, 100em) 2em;
+	display: grid;
+	grid-template-columns: 2em minmax(auto, 100em) 2em;
 
-  form {
-    display: contents;
-  }
+	form {
+		display: contents;
+	}
 
-  input[type="checkbox"] + label {
-    grid-column: 1 / 2;
-  }
+	input[type="checkbox"]+label {
+		grid-column: 1 / 2;
+	}
 
-  input[name="description"] {
-    grid-column: 2 / 3;
-  }
+	input[name="description"] {
+		grid-column: 2 / 3;
+	}
 }
