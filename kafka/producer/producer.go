@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	"todo-app/dto"
+	"todo-app/act"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
@@ -21,12 +21,12 @@ func Connect(producerTopic string) error {
 	return err
 }
 
-func Produce(toDo *dto.ToDoEvent) error {
+func Produce(todo *act.TodoAction) error {
 	if producer == nil {
 		log.Printf("Producer not connected\n")
 		return nil
 	}
-	toDoJson, err := json.Marshal(toDo)
+	todoJson, err := json.Marshal(todo)
 	if err != nil {
 		return err
 	}
@@ -36,8 +36,8 @@ func Produce(toDo *dto.ToDoEvent) error {
 			Topic:     &topic,
 			Partition: kafka.PartitionAny,
 		},
-		Key:   []byte(toDo.Id),
-		Value: toDoJson,
+		Key:   []byte(todo.Id),
+		Value: todoJson,
 	}, deliveryChan)
 	if err != nil {
 		return err

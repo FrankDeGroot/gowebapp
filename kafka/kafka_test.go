@@ -1,13 +1,14 @@
-package events
+package kafka
 
 import (
 	"fmt"
 	"testing"
 	"time"
+	"todo-app/act"
 	"todo-app/dto"
-	"todo-app/events/admin"
-	"todo-app/events/consumer"
-	"todo-app/events/producer"
+	"todo-app/kafka/admin"
+	"todo-app/kafka/consumer"
+	"todo-app/kafka/producer"
 )
 
 func TestProduceConsume(t *testing.T) {
@@ -22,16 +23,13 @@ func TestProduceConsume(t *testing.T) {
 	}
 	defer consumer.Close()
 	defer admin.DeleteTopic(topic)
-	if err := producer.Produce(&dto.ToDoEvent{
-		Action: dto.ActionAdd,
-		SavedToDo: dto.SavedToDo{
-			Id: "123",
-			ToDo: dto.ToDo{
-				Description: "test",
-				Done:        false,
-			},
+	if err := producer.Produce(act.Make(act.Add, &dto.SavedTodo{
+		Id: "123",
+		Todo: dto.Todo{
+			Description: "test",
+			Done:        false,
 		},
-	}); err != nil {
+	})); err != nil {
 		t.Fatal(err)
 	}
 	todo, err := consumer.Consume()

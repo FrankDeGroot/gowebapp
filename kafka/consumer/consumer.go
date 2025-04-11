@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"time"
-	"todo-app/dto"
+	"todo-app/act"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
@@ -28,11 +28,11 @@ func Connect(topic string, name string) error {
 	return nil
 }
 
-func Consume() (*dto.ToDoEvent, error) {
+func Consume() (*act.TodoAction, error) {
 	for {
 		msg, err := consumer.ReadMessage(time.Second)
 		if err == nil {
-			todo := dto.ToDoEvent{}
+			todo := act.TodoAction{}
 			err := json.Unmarshal(msg.Value, &todo)
 			if err != nil {
 				return nil, err

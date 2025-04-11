@@ -2,8 +2,8 @@ package main
 
 import (
 	"todo-app/db"
-	"todo-app/events/consumer"
-	"todo-app/events/producer"
+	"todo-app/kafka/consumer"
+	"todo-app/kafka/producer"
 	"todo-app/web"
 	"todo-app/ws"
 )
@@ -21,6 +21,5 @@ func main() {
 	consumer.Connect(topic, topic)
 	defer consumer.Close()
 
-	ws.Serve()
-	web.Serve()
+	web.Serve(ws.Init())
 }

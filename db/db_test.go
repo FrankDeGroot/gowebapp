@@ -19,42 +19,42 @@ func TestInsertDelete(t *testing.T) {
 	Connect()
 	defer Close()
 
-	toDo := dto.ToDo{Description: "Test" + time.Now().Format(time.RFC3339), Done: true}
-	savedToDo, err := Insert(&toDo)
+	todo := dto.Todo{Description: "Test" + time.Now().Format(time.RFC3339), Done: true}
+	savedTodo, err := Insert(&todo)
 	if err != nil {
 		t.Fatalf("Error Inserting To Do %v", err)
 	}
-	if savedToDo.Description != toDo.Description {
-		t.Fatalf("Wanted %v got %v", toDo.Description, savedToDo.Description)
+	if savedTodo.Description != todo.Description {
+		t.Fatalf("Wanted %v got %v", todo.Description, savedTodo.Description)
 	}
-	if savedToDo.Done != toDo.Done {
-		t.Fatalf("Wanted %v got %v", toDo.Done, savedToDo.Done)
+	if savedTodo.Done != todo.Done {
+		t.Fatalf("Wanted %v got %v", todo.Done, savedTodo.Done)
 	}
 
-	foundToDo, err := GetOne(savedToDo.Id)
+	foundToDo, err := GetOne(savedTodo.Id)
 	if err != nil {
 		t.Fatalf("Error finding To Do %v", err)
 	}
-	if foundToDo.Description != toDo.Description {
-		t.Fatalf("Wanted %v got %v", toDo.Description, savedToDo.Description)
+	if foundToDo.Description != todo.Description {
+		t.Fatalf("Wanted %v got %v", todo.Description, savedTodo.Description)
 	}
-	if foundToDo.Done != toDo.Done {
-		t.Fatalf("Wanted %v got %v", toDo.Done, savedToDo.Done)
+	if foundToDo.Done != todo.Done {
+		t.Fatalf("Wanted %v got %v", todo.Done, savedTodo.Done)
 	}
 
-	toDos, err := GetAll()
+	todos, err := GetAll()
 	found := false
 	if err != nil {
 		t.Fatalf("Error finding To Dos %v", err)
 	}
-	for _, todo := range *toDos {
-		if todo.Id == savedToDo.Id {
+	for _, todo := range *todos {
+		if todo.Id == savedTodo.Id {
 			found = true
-			if todo.Description != toDo.Description {
-				t.Fatalf("Wanted %v got %v", toDo.Description, todo.Description)
+			if todo.Description != todo.Description {
+				t.Fatalf("Wanted %v got %v", todo.Description, todo.Description)
 			}
-			if todo.Done != toDo.Done {
-				t.Fatalf("Wanted %v got %v", toDo.Done, todo.Done)
+			if todo.Done != todo.Done {
+				t.Fatalf("Wanted %v got %v", todo.Done, todo.Done)
 			}
 			break
 		}
@@ -63,7 +63,7 @@ func TestInsertDelete(t *testing.T) {
 		t.Fatalf("To Do not found in GetAll")
 	}
 
-	err = Delete(savedToDo.Id)
+	err = Delete(savedTodo.Id)
 	if err != nil {
 		t.Fatalf("Error Deleting To Do %v", err)
 	}

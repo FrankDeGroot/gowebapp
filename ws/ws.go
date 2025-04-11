@@ -5,26 +5,35 @@ import (
 	"log"
 	"net/http"
 	"time"
-	"todo-app/dto"
-	"todo-app/events/consumer"
-	"todo-app/events/producer"
+	"todo-app/act"
+	"todo-app/kafka/consumer"
+	"todo-app/kafka/producer"
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 )
 
-var wsConn = make([]*websocket.Conn, 0)
+var conns = make(map[*websocket.Conn]struct{}, 0)
 
-type Notify struct{}
-
-func Serve() {
-	http.HandleFunc("GET /ws/todos", getEvents)
+func Init() act.Notifier {
+	http.HandleFunc("GET /ws/todos", getToDoActions)
 	go consume()
+	return Notify
+}
+
+func Notify(todoAction *act.TodoAction) {
+	err := producer.Produce(todoAction)
+	if err != nil {
+		log.Printf("Error producing todo: %v\n", err)
+	}
+	if err != nil {
+		log.Printf("Error producing todo: %v\n", err)
+	}
 }
 
 func consume() {
 	for {
-		if len(wsConn) == 0 {
+		if len(conns) == 0 {
 			time.Sleep(time.Second)
 			continue
 		}
@@ -35,56 +44,25 @@ func consume() {
 		if todo == nil {
 			continue
 		}
-		newWsConn := make([]*websocket.Conn, 0)
-		for _, c := range wsConn {
+		for c := range conns {
 			log.Printf("Sending todo event")
 			err = wsjson.Write(context.Background(), c, todo)
 			if err != nil {
+				delete(conns, c)
 				log.Printf("Error writing to socket: %v", err)
-			} else {
-				newWsConn = append(newWsConn, c)
 			}
 		}
-		wsConn = newWsConn
-		log.Printf("Sent events successfully to %v connections", len(wsConn))
+		log.Printf("Sent events successfully to %v connections", len(conns))
 	}
 }
 
-func getEvents(w http.ResponseWriter, r *http.Request) {
+func getToDoActions(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Getting events")
 	c, err := websocket.Accept(w, r, nil)
 	if err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error accepting websocket: %v\n", err)
 	}
-	wsConn = append(wsConn, c)
-	log.Printf("Websocket connected %v connections", len(wsConn))
-}
-
-func (n Notify) Add(savedToDo *dto.SavedToDo) {
-	err := producer.Produce(&dto.ToDoEvent{
-		Action:    dto.ActionAdd,
-		SavedToDo: *savedToDo,
-	})
-	if err != nil {
-		log.Printf("Error producing todo: %v\n", err)
-	}
-}
-
-func (n Notify) Change(savedToDo *dto.SavedToDo) {
-	if err := producer.Produce(&dto.ToDoEvent{
-		Action:    dto.ActionChg,
-		SavedToDo: *savedToDo,
-	}); err != nil {
-		log.Printf("Error producing todo: %v\n", err)
-	}
-}
-
-func (n Notify) Delete(savedToDo *dto.SavedToDo) {
-	if err := producer.Produce(&dto.ToDoEvent{
-		Action:    dto.ActionDel,
-		SavedToDo: *savedToDo,
-	}); err != nil {
-		log.Printf("Error producing todo: %v\n", err)
-	}
+	conns[c] = struct{}{}
+	log.Printf("Websocket connected %v connections", len(conns))
 }

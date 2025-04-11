@@ -12,6 +12,7 @@ import (
 )
 
 func TestGetOne(t *testing.T) {
+	// TODO Use test database server like db_test
 	db.Connect()
 	defer db.Close()
 
@@ -19,55 +20,55 @@ func TestGetOne(t *testing.T) {
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	toDo := dto.ToDo{Description: "test" + time.Now().Format(time.RFC3339), Done: false}
-	toDoBytes, err := json.Marshal(toDo)
+	todo := dto.Todo{Description: "test" + time.Now().Format(time.RFC3339), Done: false}
+	todoBytes, err := json.Marshal(todo)
 	if err != nil {
 		t.Fatal(err)
 	}
-	post, err := http.Post(srv.URL+TODO_PATH, CONTENT_TYPE_JSON, bytes.NewBuffer(toDoBytes))
+	post, err := http.Post(srv.URL+TODO_PATH, CONTENT_TYPE_JSON, bytes.NewBuffer(todoBytes))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if post.StatusCode != http.StatusOK {
 		t.Fatal(err)
 	}
-	postToDo := dto.SavedToDo{}
+	postToDo := dto.SavedTodo{}
 	json.NewDecoder(post.Body).Decode(&postToDo)
-	if postToDo.Description != toDo.Description {
-		t.Fatalf("Wanted %v got %v", toDo.Description, postToDo.Description)
+	if postToDo.Description != todo.Description {
+		t.Fatalf("Wanted %v got %v", todo.Description, postToDo.Description)
 	}
-	if postToDo.Done != toDo.Done {
-		t.Fatalf("Wanted %v got %v", toDo.Done, postToDo.Done)
+	if postToDo.Done != todo.Done {
+		t.Fatalf("Wanted %v got %v", todo.Done, postToDo.Done)
 	}
 
 	getOne, err := http.Get(srv.URL + TODO_PATH + "/" + postToDo.Id)
 	if err != nil {
 		t.Fatal(err)
 	}
-	getToDo := dto.SavedToDo{}
+	getToDo := dto.SavedTodo{}
 	json.NewDecoder(getOne.Body).Decode(&getToDo)
-	if getToDo.Description != toDo.Description {
-		t.Fatalf("Wanted %v got %v", toDo.Description, getToDo.Description)
+	if getToDo.Description != todo.Description {
+		t.Fatalf("Wanted %v got %v", todo.Description, getToDo.Description)
 	}
-	if getToDo.Done != toDo.Done {
-		t.Fatalf("Wanted %v got %v", toDo.Done, getToDo.Done)
+	if getToDo.Done != todo.Done {
+		t.Fatalf("Wanted %v got %v", todo.Done, getToDo.Done)
 	}
 
 	getAll, err := http.Get(srv.URL + TODO_PATH)
 	if err != nil {
 		t.Fatal(err)
 	}
-	getToDos := []dto.SavedToDo{}
+	getToDos := []dto.SavedTodo{}
 	json.NewDecoder(getAll.Body).Decode(&getToDos)
 	found := false
 	for _, getToDo := range getToDos {
 		if getToDo.Id == postToDo.Id {
 			found = true
-			if getToDo.Description != toDo.Description {
-				t.Fatalf("Wanted %v got %v", toDo.Description, getToDo.Description)
+			if getToDo.Description != todo.Description {
+				t.Fatalf("Wanted %v got %v", todo.Description, getToDo.Description)
 			}
-			if getToDo.Done != toDo.Done {
-				t.Fatalf("Wanted %v got %v", toDo.Done, getToDo.Done)
+			if getToDo.Done != todo.Done {
+				t.Fatalf("Wanted %v got %v", todo.Done, getToDo.Done)
 			}
 			break
 		}

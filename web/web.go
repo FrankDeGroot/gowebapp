@@ -4,18 +4,18 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"todo-app/act"
 	"todo-app/db"
 	"todo-app/dto"
-	"todo-app/ws"
 )
 
 const CONTENT_TYPE_JSON = "application/json;charset=utf-8"
 const TODO_PATH = "/api/todos"
 
-var notifier ws.Notifier = NoNotify{}
+var ntfy = func(*act.TodoAction) {}
 
-func Serve() {
-	notifier = ws.Notify{}
+func Serve(n act.Notifier) {
+	ntfy = n
 	log.Println("Starting web server")
 	setHandlers()
 	http.ListenAndServe(":8000", nil)
@@ -31,10 +31,10 @@ func setHandlers() {
 }
 
 func getAll(w http.ResponseWriter, r *http.Request) {
-	toDos, err := db.GetAll()
+	todos, err := db.GetAll()
 	switch err {
 	case nil:
-		encode(w, toDos)
+		encode(w, todos)
 	default:
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error getting todos: %v\n", err)
@@ -42,10 +42,10 @@ func getAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func getOne(w http.ResponseWriter, r *http.Request) {
-	toDo, err := db.GetOne(r.PathValue("id"))
+	todo, err := db.GetOne(r.PathValue("id"))
 	switch err {
 	case nil:
-		encode(w, toDo)
+		encode(w, todo)
 	case db.ErrNotFound:
 		http.Error(w, "id not found", http.StatusNotFound)
 	default:
@@ -55,29 +55,29 @@ func getOne(w http.ResponseWriter, r *http.Request) {
 }
 
 func post(w http.ResponseWriter, r *http.Request) {
-	var toDo = dto.ToDo{}
-	if err := json.NewDecoder(r.Body).Decode(&toDo); err != nil {
+	var todo = dto.Todo{}
+	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
 		http.Error(w, "Error", http.StatusBadRequest)
 	}
-	savedToDo, err := db.Insert(&toDo)
+	savedTodo, err := db.Insert(&todo)
 	if err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error posting todo: %v\n", err)
 	}
-	notifier.Add(savedToDo)
-	encode(w, savedToDo)
+	ntfy(act.Make(act.Add, savedTodo))
+	encode(w, savedTodo)
 }
 
 func put(w http.ResponseWriter, r *http.Request) {
-	var toDo = dto.SavedToDo{}
-	if err := json.NewDecoder(r.Body).Decode(&toDo); err != nil {
+	var savedTodo = dto.SavedTodo{}
+	if err := json.NewDecoder(r.Body).Decode(&savedTodo); err != nil {
 		http.Error(w, "Error", http.StatusBadRequest)
 	}
-	if err := db.Update(&toDo); err != nil {
+	if err := db.Update(&savedTodo); err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error putting todo: %v\n", err)
 	}
-	notifier.Change(&toDo)
+	ntfy(act.Make(act.Change, &savedTodo))
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -87,7 +87,7 @@ func delete(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error deleting todo: %v\n", err)
 	}
-	notifier.Delete(&dto.SavedToDo{Id: id})
+	ntfy(act.Make(act.Delete, &dto.SavedTodo{Id: id}))
 	w.WriteHeader(http.StatusNoContent)
 }
 
