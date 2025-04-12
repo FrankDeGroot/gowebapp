@@ -23,21 +23,17 @@ func TestProduceConsume(t *testing.T) {
 	assert.NoError(t, err)
 	defer c.Close()
 	defer admin.DeleteTopic(topic)
-	if err := p.Produce(act.Make(act.Add, &dto.SavedTodo{
+	pTodo := &dto.SavedTodo{
 		Id: "123",
 		Todo: dto.Todo{
 			Description: "test",
 			Done:        false,
 		},
-	})); err != nil {
-		t.Fatal(err)
 	}
-	todo, err := c.Consume()
+	err = p.Produce(act.Make(act.Add, pTodo))
 	assert.NoError(t, err)
-	if todo.Id != "123" {
-		t.Fatalf("Wanted %v got %v", "123", todo.Id)
-	}
-	if todo.Description != "test" {
-		t.Fatalf("Wanted %v got %v", "test", todo.Description)
-	}
+	cTodo, err := c.Consume()
+	assert.NoError(t, err)
+	assert.Equal(t, pTodo.Id, cTodo.Id)
+	assert.Equal(t, pTodo.Description, cTodo.Description)
 }
