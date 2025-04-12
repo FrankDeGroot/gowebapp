@@ -12,10 +12,14 @@ import (
 const CONTENT_TYPE_JSON = "application/json;charset=utf-8"
 const TODO_PATH = "/api/todos"
 
-var ntfy = func(*act.TodoAction) {}
+var (
+	ntfy = func(*act.TodoAction) {}
+	repo TodoRepo
+)
 
-func Serve(n act.Notifier) {
+func Serve(n act.Notifier, r TodoRepo) {
 	ntfy = n
+	repo = r
 	log.Println("Starting web server")
 	setHandlers()
 	http.ListenAndServe(":8000", nil)
@@ -31,7 +35,7 @@ func setHandlers() {
 }
 
 func getAll(w http.ResponseWriter, r *http.Request) {
-	todos, err := db.GetAll()
+	todos, err := repo.GetAll()
 	switch err {
 	case nil:
 		encode(w, todos)
@@ -42,7 +46,7 @@ func getAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func getOne(w http.ResponseWriter, r *http.Request) {
-	todo, err := db.GetOne(r.PathValue("id"))
+	todo, err := repo.GetOne(r.PathValue("id"))
 	switch err {
 	case nil:
 		encode(w, todo)
@@ -59,7 +63,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
 		http.Error(w, "Error", http.StatusBadRequest)
 	}
-	savedTodo, err := db.Insert(&todo)
+	savedTodo, err := repo.Insert(&todo)
 	if err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error posting todo: %v\n", err)
@@ -73,7 +77,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&savedTodo); err != nil {
 		http.Error(w, "Error", http.StatusBadRequest)
 	}
-	if err := db.Update(&savedTodo); err != nil {
+	if err := repo.Update(&savedTodo); err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error putting todo: %v\n", err)
 	}
@@ -83,7 +87,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 
 func delete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	if err := db.Delete(id); err != nil {
+	if err := repo.Delete(id); err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error deleting todo: %v\n", err)
 	}

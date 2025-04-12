@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"todo-app/db"
 	"todo-app/kafka/consumer"
 	"todo-app/kafka/producer"
@@ -12,8 +13,11 @@ const topic = "todo"
 
 func main() {
 
-	db.Connect()
-	defer db.Close()
+	repo, err := db.Connect()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer repo.Close()
 
 	producer.Connect(topic)
 	defer producer.Close()
@@ -21,5 +25,5 @@ func main() {
 	consumer.Connect(topic, topic)
 	defer consumer.Close()
 
-	web.Serve(ws.Init())
+	web.Serve(ws.Init(), repo)
 }
