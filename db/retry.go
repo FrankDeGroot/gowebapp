@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 )
 
@@ -12,7 +13,8 @@ func retry[T any](attempts int, duration time.Duration, f func() (T, error)) (re
 	for i := 0; i < attempts; i++ {
 		if i > 0 {
 			log.Println("retrying after error:", err)
-			time.Sleep(time.Duration(duration))
+			randAdjustment := time.Duration(rand.Int63n(int64(duration)/5)) - duration/10
+			time.Sleep(duration + randAdjustment)
 			duration *= 2
 		}
 		result, err = f()
