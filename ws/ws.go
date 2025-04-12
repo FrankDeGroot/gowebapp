@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 	"todo-app/act"
-	"todo-app/kafka/consumer"
 	"todo-app/kafka/producer"
 
 	"github.com/coder/websocket"
@@ -15,9 +14,9 @@ import (
 
 var conns = make(map[*websocket.Conn]struct{}, 0)
 
-func Init() act.Notifier {
+func Init(c Consumer) act.Notifier {
 	http.HandleFunc("GET /ws/todos", getToDoActions)
-	go consume()
+	go consume(c)
 	return Notify
 }
 
@@ -31,24 +30,24 @@ func Notify(todoAction *act.TodoAction) {
 	}
 }
 
-func consume() {
+func consume(cons Consumer) {
 	for {
 		if len(conns) == 0 {
 			time.Sleep(time.Second)
 			continue
 		}
-		todo, err := consumer.Consume()
+		todo, err := cons.Consume()
 		if err != nil {
 			log.Printf("Error consuming todo: %v\n", err)
 		}
 		if todo == nil {
 			continue
 		}
-		for c := range conns {
+		for conn := range conns {
 			log.Printf("Sending todo event")
-			err = wsjson.Write(context.Background(), c, todo)
+			err = wsjson.Write(context.Background(), conn, todo)
 			if err != nil {
-				delete(conns, c)
+				delete(conns, conn)
 				log.Printf("Error writing to socket: %v", err)
 			}
 		}

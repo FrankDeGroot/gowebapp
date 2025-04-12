@@ -9,28 +9,31 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
-var consumer *kafka.Consumer
+type Consumer struct {
+	consumer *kafka.Consumer
+}
 
-func Connect(topic string, name string) error {
-	var err error
-	consumer, err = kafka.NewConsumer(&kafka.ConfigMap{
+func Connect(topic string, name string) (*Consumer, error) {
+	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": os.Getenv("KAFKA_BROKER"),
 		"group.id":          name,
 		"auto.offset.reset": "earliest",
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
+
 	err = consumer.Subscribe(topic, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return &Consumer{consumer: consumer}, nil
 }
 
-func Consume() (*act.TodoAction, error) {
+func (c *Consumer) Consume() (*act.TodoAction, error) {
 	for {
-		msg, err := consumer.ReadMessage(time.Second)
+		msg, err := c.consumer.ReadMessage(time.Second)
 		if err == nil {
 			todo := act.TodoAction{}
 			err := json.Unmarshal(msg.Value, &todo)
@@ -44,6 +47,6 @@ func Consume() (*act.TodoAction, error) {
 	}
 }
 
-func Close() {
-	consumer.Close()
+func (c *Consumer) Close() {
+	c.consumer.Close()
 }

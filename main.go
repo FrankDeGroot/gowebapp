@@ -22,8 +22,11 @@ func main() {
 	producer.Connect(topic)
 	defer producer.Close()
 
-	consumer.Connect(topic, topic)
-	defer consumer.Close()
+	c, err := consumer.Connect(topic, topic)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer c.Close()
 
-	web.Serve(ws.Init(), repo)
+	web.Serve(ws.Init(c), repo)
 }

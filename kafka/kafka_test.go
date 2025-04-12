@@ -9,6 +9,8 @@ import (
 	"todo-app/kafka/admin"
 	"todo-app/kafka/consumer"
 	"todo-app/kafka/producer"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestProduceConsume(t *testing.T) {
@@ -18,10 +20,9 @@ func TestProduceConsume(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer producer.Close()
-	if err := consumer.Connect(topic, topic); err != nil {
-		t.Fatal(err)
-	}
-	defer consumer.Close()
+	c, err := consumer.Connect(topic, topic)
+	assert.NoError(t, err)
+	defer c.Close()
 	defer admin.DeleteTopic(topic)
 	if err := producer.Produce(act.Make(act.Add, &dto.SavedTodo{
 		Id: "123",
@@ -32,10 +33,8 @@ func TestProduceConsume(t *testing.T) {
 	})); err != nil {
 		t.Fatal(err)
 	}
-	todo, err := consumer.Consume()
-	if err != nil {
-		t.Fatal(err)
-	}
+	todo, err := c.Consume()
+	assert.NoError(t, err)
 	if todo.Id != "123" {
 		t.Fatalf("Wanted %v got %v", "123", todo.Id)
 	}
