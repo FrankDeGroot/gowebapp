@@ -5,10 +5,13 @@ import (
 	"todo-app/ws/mocks"
 )
 
-var mockConsumer = new(mocks.MockConsumer)
+var (
+	mockProducer = new(mocks.MockProducer)
+	mockConsumer = new(mocks.MockConsumer)
+)
 
 func TestInit(t *testing.T) {
-	if Init(mockConsumer) == nil {
+	if Init(mockProducer, mockConsumer) == nil {
 		t.Fatal("Init should not return nil")
 	}
 }

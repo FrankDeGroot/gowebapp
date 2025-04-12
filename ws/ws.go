@@ -6,25 +6,25 @@ import (
 	"net/http"
 	"time"
 	"todo-app/act"
-	"todo-app/kafka/producer"
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 )
 
-var conns = make(map[*websocket.Conn]struct{}, 0)
+var (
+	conns = make(map[*websocket.Conn]struct{}, 0)
+	prod  Producer
+)
 
-func Init(c Consumer) act.Notifier {
+func Init(p Producer, c Consumer) act.Notifier {
+	prod = p
 	http.HandleFunc("GET /ws/todos", getToDoActions)
 	go consume(c)
-	return Notify
+	return notify
 }
 
-func Notify(todoAction *act.TodoAction) {
-	err := producer.Produce(todoAction)
-	if err != nil {
-		log.Printf("Error producing todo: %v\n", err)
-	}
+func notify(todoAction *act.TodoAction) {
+	err := prod.Produce(todoAction)
 	if err != nil {
 		log.Printf("Error producing todo: %v\n", err)
 	}

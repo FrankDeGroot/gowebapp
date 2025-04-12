@@ -2,38 +2,34 @@ package producer
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"todo-app/act"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 )
 
-var (
+type Producer struct {
 	producer *kafka.Producer
 	topic    string
-)
-
-func Connect(producerTopic string) error {
-	topic = producerTopic
-	var err error
-	producer, err = kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_BROKER")})
-	return err
 }
 
-func Produce(todo *act.TodoAction) error {
-	if producer == nil {
-		log.Printf("Producer not connected\n")
-		return nil
+func Connect(producerTopic string) (*Producer, error) {
+	producer, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_BROKER")})
+	if err != nil {
+		return nil, err
 	}
+	return &Producer{producer: producer, topic: producerTopic}, nil
+}
+
+func (p *Producer) Produce(todo *act.TodoAction) error {
 	todoJson, err := json.Marshal(todo)
 	if err != nil {
 		return err
 	}
 	deliveryChan := make(chan kafka.Event)
-	err = producer.Produce(&kafka.Message{
+	err = p.producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{
-			Topic:     &topic,
+			Topic:     &p.topic,
 			Partition: kafka.PartitionAny,
 		},
 		Key:   []byte(todo.Id),
@@ -50,7 +46,7 @@ func Produce(todo *act.TodoAction) error {
 	return nil
 }
 
-func Close() {
-	producer.Flush(500)
-	producer.Close()
+func (p *Producer) Close() {
+	p.producer.Flush(500)
+	p.producer.Close()
 }

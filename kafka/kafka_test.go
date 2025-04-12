@@ -16,15 +16,14 @@ import (
 func TestProduceConsume(t *testing.T) {
 	topic := fmt.Sprintf("todo%v", time.Now().Format("_2006_01_02_15_04_05"))
 	t.Log(topic)
-	if err := producer.Connect(topic); err != nil {
-		t.Fatal(err)
-	}
-	defer producer.Close()
+	p, err := producer.Connect(topic)
+	assert.NoError(t, err)
+	defer p.Close()
 	c, err := consumer.Connect(topic, topic)
 	assert.NoError(t, err)
 	defer c.Close()
 	defer admin.DeleteTopic(topic)
-	if err := producer.Produce(act.Make(act.Add, &dto.SavedTodo{
+	if err := p.Produce(act.Make(act.Add, &dto.SavedTodo{
 		Id: "123",
 		Todo: dto.Todo{
 			Description: "test",
