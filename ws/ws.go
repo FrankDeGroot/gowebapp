@@ -34,8 +34,7 @@ func notify(todoAction *act.TodoAction) {
 func consume(cons Consumer) {
 	conns := make(map[*websocket.Conn]struct{}, 0)
 	for {
-		conn := <-connChan
-		conns[conn] = struct{}{}
+		conns[<-connChan] = struct{}{}
 
 		for len(conns) != 0 {
 			todo, err := cons.Consume()
@@ -46,13 +45,13 @@ func consume(cons Consumer) {
 				continue
 			}
 
-		AddConns:
+		addConns:
 			for {
 				select {
 				case conn := <-connChan:
 					conns[conn] = struct{}{}
 				default:
-					break AddConns
+					break addConns
 				}
 			}
 			for conn := range conns {
