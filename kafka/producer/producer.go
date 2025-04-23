@@ -13,7 +13,7 @@ type Producer struct {
 	topic    string
 }
 
-func Connect(producerTopic string) (*Producer, error) {
+func Open(producerTopic string) (*Producer, error) {
 	producer, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": os.Getenv("KAFKA_BROKER")})
 	if err != nil {
 		return nil, err

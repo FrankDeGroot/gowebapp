@@ -22,7 +22,10 @@ func Serve(n act.Notifier, r TodoRepo) {
 	repo = r
 	log.Println("Starting web server")
 	setHandlers()
-	http.ListenAndServe(":8000", nil)
+	err := http.ListenAndServe(":8000", nil)
+	if err != nil {
+		log.Fatalf("Error serving http %v", err)
+	}
 }
 
 func setHandlers() {

@@ -5,6 +5,7 @@
     "customizations": {
         "vscode": {
             "extensions": [
+                "editorconfig.editorconfig",
                 "golang.go",
                 "ms-azuretools.vscode-docker"
             ]
@@ -14,7 +15,9 @@
         "docker-compose.yaml"
     ],
     "service": "golang",
-    "forwardPorts": [ 8000 ],
+    "forwardPorts": [
+        8000
+    ],
     "postCreateCommand": {
         "delve": "go install -v github.com/go-delve/delve/cmd/dlv@latest",
         "git": "git config --global --add safe.directory /todo-app"

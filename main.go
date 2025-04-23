@@ -13,23 +13,25 @@ const topic = "todo"
 
 func main() {
 
-	repo, err := db.Connect()
+	repo, err := db.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer repo.Close()
 
-	p, err := producer.Connect(topic)
+	p, err := producer.Open(topic)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer p.Close()
 
-	c, err := consumer.Connect(topic, topic)
+	c, err := consumer.Open(topic, topic)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer c.Close()
 
-	web.Serve(ws.Init(p, c), repo)
+	n := ws.Open(p, c)
+	defer ws.Close()
+	web.Serve(n, repo)
 }

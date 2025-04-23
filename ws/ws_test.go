@@ -19,7 +19,8 @@ var (
 )
 
 func TestWebSocketConnection(t *testing.T) {
-	assert.NotNil(t, Init(mockProducer, mockConsumer))
+	assert.NotNil(t, Open(mockProducer, mockConsumer))
+	defer Close()
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 

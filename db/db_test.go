@@ -16,7 +16,7 @@ func TestInsertDelete(t *testing.T) {
 	defer ts.Stop()
 
 	os.Setenv("DATABASE_URL", ts.PGURL().String())
-	db, err := Connect()
+	db, err := Open()
 	assert.NoError(t, err)
 	defer db.Close()
 

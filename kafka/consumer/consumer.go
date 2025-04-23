@@ -13,7 +13,7 @@ type Consumer struct {
 	consumer *kafka.Consumer
 }
 
-func Connect(topic string, name string) (*Consumer, error) {
+func Open(topic string, name string) (*Consumer, error) {
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": os.Getenv("KAFKA_BROKER"),
 		"group.id":          name,

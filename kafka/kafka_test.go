@@ -16,10 +16,10 @@ import (
 func TestProduceConsume(t *testing.T) {
 	topic := fmt.Sprintf("todo%v", time.Now().Format("_2006_01_02_15_04_05"))
 	t.Log(topic)
-	p, err := producer.Connect(topic)
+	p, err := producer.Open(topic)
 	assert.NoError(t, err)
 	defer p.Close()
-	c, err := consumer.Connect(topic, topic)
+	c, err := consumer.Open(topic, topic)
 	assert.NoError(t, err)
 	defer c.Close()
 	defer admin.DeleteTopic(topic)
