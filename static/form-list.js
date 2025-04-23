@@ -28,7 +28,16 @@ customElements.define('form-list',
 			})
 			this.addEventListener('input', e => {
 				const form = e.target.closest('form')
-				if (form !== this.#newForm) this.#markPut(form)
+				if (form !== this.#newForm) {
+					switch (e.target.type) {
+						case 'text': 
+							this.#markPut(form)
+							break
+						default:
+							this.#put(form)
+							break
+					}
+				}
 			})
 			this.addEventListener('click', async e => {
 				const elm = e.target
