@@ -13,20 +13,20 @@ function connect() {
 
 	socket.onmessage = event => {
 		const e = JSON.parse(event.data)
-		let action;
-		switch (e.action) {
-			case "A":
-				action = "todo:add"
+		let verb;
+		switch (e.verb) {
+			case "Post":
+				verb = "todo:post"
 				break
-			case "C":
-				action = "todo:change"
+			case "Put":
+				verb = "todo:put"
 				break
-			case "D":
-				action = "todo:delete"
+			case "Delete":
+				verb = "todo:delete"
 				break
 		}
-		delete e.action
-		document.dispatchEvent(new CustomEvent(action, { bubbles: true, detail: e }))
+		delete e.verb
+		document.dispatchEvent(new CustomEvent(verb, { bubbles: true, detail: e }))
 	}
 
 	socket.onclose = event => {

@@ -30,7 +30,7 @@ func TestProduceConsume(t *testing.T) {
 			Done:        false,
 		},
 	}
-	err = p.Produce(act.Make(act.Add, pTodo))
+	err = p.Produce(act.Make(act.Post, pTodo))
 	assert.NoError(t, err)
 	cTodo, err := c.Consume()
 	assert.NoError(t, err)

@@ -24,7 +24,7 @@ func TestWebSocketConnection(t *testing.T) {
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	todo := &act.TodoAction{Action: act.Add,
+	todo := &act.TodoAction{Verb: act.Post,
 		SavedTodo: dto.SavedTodo{Id: "123",
 			Todo: dto.Todo{Description: "123", Done: false}}}
 	mockConsumer.On("Consume").Return(todo, nil)

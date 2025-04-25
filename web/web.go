@@ -71,7 +71,7 @@ func post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error posting todo: %v\n", err)
 	}
-	ntfy(act.Make(act.Add, savedTodo))
+	ntfy(act.Make(act.Post, savedTodo))
 	encode(w, savedTodo)
 }
 
@@ -84,7 +84,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error", http.StatusInternalServerError)
 		log.Printf("Error putting todo: %v\n", err)
 	}
-	ntfy(act.Make(act.Change, &savedTodo))
+	ntfy(act.Make(act.Put, &savedTodo))
 	w.WriteHeader(http.StatusNoContent)
 }
 

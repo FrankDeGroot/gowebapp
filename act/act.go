@@ -2,24 +2,24 @@ package act
 
 import "todo-app/dto"
 
-type Action string
+type Verb string
 
 const (
-	Add    Action = "A"
-	Change Action = "C"
-	Delete Action = "D"
+	Post   Verb = "Post"
+	Put    Verb = "Put"
+	Delete Verb = "Delete"
 )
 
 type TodoAction struct {
-	Action Action `json:"action"`
+	Verb Verb `json:"verb"`
 	dto.SavedTodo
 }
 
 type Notifier func(*TodoAction)
 
-func Make(action Action, savedTodo *dto.SavedTodo) *TodoAction {
+func Make(verb Verb, savedTodo *dto.SavedTodo) *TodoAction {
 	return &TodoAction{
-		Action:    action,
+		Verb:      verb,
 		SavedTodo: *savedTodo,
 	}
 }

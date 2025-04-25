@@ -7,10 +7,10 @@ customElements.define('form-list',
 		#prefix = this.dataset.prefix
 
 		connectedCallback() {
-			document.addEventListener(`${this.#prefix}:add`, e => {
+			document.addEventListener(`${this.#prefix}:post`, e => {
 				this.#toForm(e.detail)
 			})
-			document.addEventListener(`${this.#prefix}:change`, e => {
+			document.addEventListener(`${this.#prefix}:put`, e => {
 				this.#toForm(e.detail)
 			})
 			document.addEventListener(`${this.#prefix}:delete`, e => {
