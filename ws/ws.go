@@ -15,7 +15,6 @@ const WS_TODO_PATH = "/ws/todos"
 var (
 	prod     Producer
 	connChan = make(chan *websocket.Conn)
-	none     = struct{}{}
 )
 
 func Open(p Producer, c Consumer) act.Notifier {
@@ -39,7 +38,7 @@ func notify(todoAction *act.TodoAction) {
 func consume(cons Consumer) {
 	conns := make(map[*websocket.Conn]struct{}, 0)
 	for conn := range connChan {
-		conns[conn] = none
+		conns[conn] = struct{}{}
 
 		for len(conns) != 0 {
 			todo, err := cons.Consume()
@@ -57,7 +56,7 @@ func consume(cons Consumer) {
 					if !ok {
 						return
 					}
-					conns[conn] = none
+					conns[conn] = struct{}{}
 				default:
 					break addConns
 				}
