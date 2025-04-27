@@ -10,16 +10,16 @@ const (
 	Delete Verb = "Delete"
 )
 
-type TodoAction struct {
+type TaskAction struct {
 	Verb Verb `json:"verb"`
-	dto.SavedTodo
+	dto.SavedTask
 }
 
-type Notifier func(*TodoAction)
+type Notifier func(*TaskAction)
 
-func Make(verb Verb, savedTodo *dto.SavedTodo) *TodoAction {
-	return &TodoAction{
+func Make(verb Verb, savedTask *dto.SavedTask) *TaskAction {
+	return &TaskAction{
 		Verb:      verb,
-		SavedTodo: *savedTodo,
+		SavedTask: *savedTask,
 	}
 }

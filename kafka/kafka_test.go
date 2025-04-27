@@ -23,17 +23,17 @@ func TestProduceConsume(t *testing.T) {
 	assert.NoError(t, err)
 	defer c.Close()
 	defer admin.DeleteTopic(topic)
-	pTodo := &dto.SavedTodo{
+	pTask := &dto.SavedTask{
 		Id: "123",
-		Todo: dto.Todo{
+		Task: dto.Task{
 			Description: "test",
 			Done:        false,
 		},
 	}
-	err = p.Produce(act.Make(act.Post, pTodo))
+	err = p.Produce(act.Make(act.Post, pTask))
 	assert.NoError(t, err)
-	cTodo, err := c.Consume()
+	cTask, err := c.Consume()
 	assert.NoError(t, err)
-	assert.Equal(t, pTodo.Id, cTodo.Id)
-	assert.Equal(t, pTodo.Description, cTodo.Description)
+	assert.Equal(t, pTask.Id, cTask.Id)
+	assert.Equal(t, pTask.Description, cTask.Description)
 }

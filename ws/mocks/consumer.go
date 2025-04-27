@@ -10,9 +10,9 @@ type MockConsumer struct {
 	mock.Mock
 }
 
-func (m *MockConsumer) Consume() (*act.TodoAction, error) {
+func (m *MockConsumer) Consume() (*act.TaskAction, error) {
 	args := m.Called()
-	return args.Get(0).(*act.TodoAction), args.Error(1)
+	return args.Get(0).(*act.TaskAction), args.Error(1)
 }
 
 func (m *MockConsumer) Close() {

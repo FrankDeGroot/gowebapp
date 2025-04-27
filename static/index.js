@@ -16,13 +16,13 @@ function connect() {
 		let verb;
 		switch (e.verb) {
 			case "Post":
-				verb = "todo:post"
+				verb = "tasks:post"
 				break
 			case "Put":
-				verb = "todo:put"
+				verb = "tasks:put"
 				break
 			case "Delete":
-				verb = "todo:delete"
+				verb = "tasks:delete"
 				break
 		}
 		delete e.verb
