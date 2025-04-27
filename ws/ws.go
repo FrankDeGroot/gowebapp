@@ -19,7 +19,7 @@ var (
 
 func Open(p Producer, c Consumer) act.Notifier {
 	prod = p
-	http.HandleFunc("GET "+WS_PATH, getToDoActions)
+	http.HandleFunc("GET "+WS_PATH, wsConnect)
 	go consume(c)
 	return notify
 }
@@ -28,10 +28,10 @@ func Close() {
 	close(connChan)
 }
 
-func notify(todoAction *act.TodoAction) {
-	err := prod.Produce(todoAction)
+func notify(taskAction *act.TaskAction) {
+	err := prod.Produce(taskAction)
 	if err != nil {
-		log.Printf("Error producing todo: %v\n", err)
+		log.Printf("Error producing task: %v\n", err)
 	}
 }
 
@@ -41,11 +41,11 @@ func consume(cons Consumer) {
 		conns[conn] = struct{}{}
 
 		for len(conns) != 0 {
-			todo, err := cons.Consume()
+			task, err := cons.Consume()
 			if err != nil {
-				log.Printf("Error consuming todo: %v\n", err)
+				log.Printf("Error consuming task: %v\n", err)
 			}
-			if todo == nil {
+			if task == nil {
 				continue
 			}
 
@@ -62,8 +62,8 @@ func consume(cons Consumer) {
 				}
 			}
 			for conn := range conns {
-				log.Printf("Sending todo event")
-				err = wsjson.Write(context.Background(), conn, todo)
+				log.Printf("Sending task event")
+				err = wsjson.Write(context.Background(), conn, task)
 				if err != nil {
 					delete(conns, conn)
 					log.Printf("Error writing to socket: %v", err)
@@ -74,7 +74,7 @@ func consume(cons Consumer) {
 	}
 }
 
-func getToDoActions(w http.ResponseWriter, r *http.Request) {
+func wsConnect(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Getting events")
 	c, err := websocket.Accept(w, r, nil)
 	if err != nil {

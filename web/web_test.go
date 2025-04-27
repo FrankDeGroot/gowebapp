@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	todo      dto.Todo            = dto.Todo{Description: "test" + time.Now().Format(time.RFC3339), Done: false}
-	savedTodo *dto.SavedTodo      = &dto.SavedTodo{Id: "1", Todo: todo}
-	mockRepo  *mocks.MockTodoRepo = new(mocks.MockTodoRepo)
+	task      dto.Task            = dto.Task{Description: "test" + time.Now().Format(time.RFC3339), Done: false}
+	savedTask *dto.SavedTask      = &dto.SavedTask{Id: "1", Task: task}
+	mockRepo  *mocks.MockTaskRepo = new(mocks.MockTaskRepo)
 )
 
 func init() {
@@ -24,70 +24,70 @@ func init() {
 	setHandlers()
 }
 
-func TestPostTodo(t *testing.T) {
+func TestPostTask(t *testing.T) {
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	mockRepo.On("Insert", &todo).Return(savedTodo, nil)
+	mockRepo.On("Insert", &task).Return(savedTask, nil)
 
-	todoBytes, err := json.Marshal(todo)
+	taskBytes, err := json.Marshal(task)
 	assert.NoError(t, err)
-	post, err := http.Post(srv.URL+TODO_PATH, CONTENT_TYPE_JSON, bytes.NewBuffer(todoBytes))
+	post, err := http.Post(srv.URL+TASKS_PATH, CONTENT_TYPE_JSON, bytes.NewBuffer(taskBytes))
 	assert.NoError(t, err)
-	postToDo := dto.SavedTodo{}
-	json.NewDecoder(post.Body).Decode(&postToDo)
-	assert.Equal(t, todo.Description, postToDo.Description)
-	assert.Equal(t, todo.Done, postToDo.Done)
+	postTask := dto.SavedTask{}
+	json.NewDecoder(post.Body).Decode(&postTask)
+	assert.Equal(t, task.Description, postTask.Description)
+	assert.Equal(t, task.Done, postTask.Done)
 }
 
-func TestGetOneTodo(t *testing.T) {
+func TestGetOneTask(t *testing.T) {
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	mockRepo.On("GetOne", "1").Return(savedTodo, nil)
+	mockRepo.On("GetOne", "1").Return(savedTask, nil)
 
-	getOne, err := http.Get(srv.URL + TODO_PATH + "/" + savedTodo.Id)
+	getOne, err := http.Get(srv.URL + TASKS_PATH + "/" + savedTask.Id)
 	assert.NoError(t, err)
-	getToDo := dto.SavedTodo{}
-	json.NewDecoder(getOne.Body).Decode(&getToDo)
+	getTask := dto.SavedTask{}
+	json.NewDecoder(getOne.Body).Decode(&getTask)
 	assert.NoError(t, err)
-	assert.Equal(t, todo.Description, getToDo.Description)
-	assert.Equal(t, todo.Done, getToDo.Done)
+	assert.Equal(t, task.Description, getTask.Description)
+	assert.Equal(t, task.Done, getTask.Done)
 }
 
-func TestGetAllTodos(t *testing.T) {
+func TestGetAllTasks(t *testing.T) {
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	mockRepo.On("GetAll").Return(&[]dto.SavedTodo{*savedTodo}, nil)
+	mockRepo.On("GetAll").Return(&[]dto.SavedTask{*savedTask}, nil)
 
-	getAll, err := http.Get(srv.URL + TODO_PATH)
+	getAll, err := http.Get(srv.URL + TASKS_PATH)
 	assert.NoError(t, err)
-	getToDos := []dto.SavedTodo{}
-	json.NewDecoder(getAll.Body).Decode(&getToDos)
+	getTasks := []dto.SavedTask{}
+	json.NewDecoder(getAll.Body).Decode(&getTasks)
 	found := false
-	for _, getToDo := range getToDos {
-		if getToDo.Id == savedTodo.Id {
+	for _, getTask := range getTasks {
+		if getTask.Id == savedTask.Id {
 			found = true
-			assert.Equal(t, todo.Description, getToDo.Description)
-			assert.Equal(t, todo.Done, getToDo.Done)
+			assert.Equal(t, task.Description, getTask.Description)
+			assert.Equal(t, task.Done, getTask.Done)
 			break
 		}
 	}
-	assert.True(t, found, "Did not find the todo")
+	assert.True(t, found, "Did not find the task")
 }
 
-func TestDeleteTodo(t *testing.T) {
+func TestDeleteTask(t *testing.T) {
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	mockRepo.On("Delete", savedTodo.Id).Return(nil)
+	mockRepo.On("Delete", savedTask.Id).Return(nil)
 
-	delReq, err := http.NewRequest(http.MethodDelete, srv.URL+TODO_PATH+"/"+savedTodo.Id, nil)
+	delReq, err := http.NewRequest(http.MethodDelete, srv.URL+TASKS_PATH+"/"+savedTask.Id, nil)
 	assert.NoError(t, err)
 	delRes, err := http.DefaultClient.Do(delReq)
 	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNoContent, delRes.StatusCode)
 
-	mockRepo.AssertCalled(t, "Delete", savedTodo.Id)
+	mockRepo.AssertCalled(t, "Delete", savedTask.Id)
 }

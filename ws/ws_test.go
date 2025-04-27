@@ -24,10 +24,10 @@ func TestWebSocketConnection(t *testing.T) {
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	todo := &act.TodoAction{Verb: act.Post,
-		SavedTodo: dto.SavedTodo{Id: "123",
-			Todo: dto.Todo{Description: "123", Done: false}}}
-	mockConsumer.On("Consume").Return(todo, nil)
+	task := &act.TaskAction{Verb: act.Post,
+		SavedTask: dto.SavedTask{Id: "123",
+			Task: dto.Task{Description: "123", Done: false}}}
+	mockConsumer.On("Consume").Return(task, nil)
 
 	url := "ws" + strings.TrimPrefix(srv.URL, "http") + WS_PATH
 	t.Log(url)
@@ -35,10 +35,10 @@ func TestWebSocketConnection(t *testing.T) {
 	assert.NoError(t, err)
 	defer c.CloseNow()
 
-	recvTodo := &act.TodoAction{}
-	err = wsjson.Read(t.Context(), c, recvTodo)
+	recvTask := &act.TaskAction{}
+	err = wsjson.Read(t.Context(), c, recvTask)
 	assert.NoError(t, err)
-	assert.NotNil(t, recvTodo)
-	assert.Equal(t, todo.Id, recvTodo.Id)
-	assert.Equal(t, todo.Description, recvTodo.Description)
+	assert.NotNil(t, recvTask)
+	assert.Equal(t, task.Id, recvTask.Id)
+	assert.Equal(t, task.Description, recvTask.Description)
 }

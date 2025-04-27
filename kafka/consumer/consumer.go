@@ -31,16 +31,16 @@ func Open(topic string, name string) (*Consumer, error) {
 	return &Consumer{consumer: consumer}, nil
 }
 
-func (c *Consumer) Consume() (*act.TodoAction, error) {
+func (c *Consumer) Consume() (*act.TaskAction, error) {
 	for {
 		msg, err := c.consumer.ReadMessage(time.Second)
 		if err == nil {
-			todo := act.TodoAction{}
-			err := json.Unmarshal(msg.Value, &todo)
+			task := act.TaskAction{}
+			err := json.Unmarshal(msg.Value, &task)
 			if err != nil {
 				return nil, err
 			}
-			return &todo, nil
+			return &task, nil
 		} else if !err.(kafka.Error).IsTimeout() {
 			return nil, err
 		}

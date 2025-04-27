@@ -2,10 +2,10 @@ package web
 
 import "todo-app/dto"
 
-type TodoRepo interface {
-	GetAll() (*[]dto.SavedTodo, error)
-	GetOne(string) (*dto.SavedTodo, error)
-	Insert(*dto.Todo) (*dto.SavedTodo, error)
-	Update(*dto.SavedTodo) error
+type TaskRepo interface {
+	GetAll() (*[]dto.SavedTask, error)
+	GetOne(string) (*dto.SavedTask, error)
+	Insert(*dto.Task) (*dto.SavedTask, error)
+	Update(*dto.SavedTask) error
 	Delete(string) error
 }

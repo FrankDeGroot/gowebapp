@@ -10,8 +10,8 @@ type MockProducer struct {
 	mock.Mock
 }
 
-func (m *MockProducer) Produce(todoAction *act.TodoAction) error {
-	args := m.Called(todoAction)
+func (m *MockProducer) Produce(taskAction *act.TaskAction) error {
+	args := m.Called(taskAction)
 	return args.Error(0)
 }
 

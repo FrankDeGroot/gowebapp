@@ -21,8 +21,8 @@ func Open(producerTopic string) (*Producer, error) {
 	return &Producer{producer: producer, topic: producerTopic}, nil
 }
 
-func (p *Producer) Produce(todo *act.TodoAction) error {
-	todoJson, err := json.Marshal(todo)
+func (p *Producer) Produce(task *act.TaskAction) error {
+	taskJson, err := json.Marshal(task)
 	if err != nil {
 		return err
 	}
@@ -32,8 +32,8 @@ func (p *Producer) Produce(todo *act.TodoAction) error {
 			Topic:     &p.topic,
 			Partition: kafka.PartitionAny,
 		},
-		Key:   []byte(todo.Id),
-		Value: todoJson,
+		Key:   []byte(task.Id),
+		Value: taskJson,
 	}, deliveryChan)
 	if err != nil {
 		return err

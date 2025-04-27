@@ -1,11 +1,11 @@
 package dto
 
-type Todo struct {
+type Task struct {
 	Description string `json:"description"`
 	Done        bool   `json:"done"`
 }
 
-type SavedTodo struct {
+type SavedTask struct {
 	Id string `json:"id"`
-	Todo
+	Task
 }

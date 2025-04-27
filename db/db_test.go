@@ -20,31 +20,31 @@ func TestInsertDelete(t *testing.T) {
 	assert.NoError(t, err)
 	defer db.Close()
 
-	todo := dto.Todo{Description: "Test" + time.Now().Format(time.RFC3339), Done: true}
-	savedTodo, err := db.Insert(&todo)
+	task := dto.Task{Description: "Test" + time.Now().Format(time.RFC3339), Done: true}
+	savedTask, err := db.Insert(&task)
 	assert.NoError(t, err)
-	assert.Equal(t, todo.Description, savedTodo.Description)
-	assert.Equal(t, todo.Done, savedTodo.Done)
+	assert.Equal(t, task.Description, savedTask.Description)
+	assert.Equal(t, task.Done, savedTask.Done)
 
-	foundToDo, err := db.GetOne(savedTodo.Id)
+	foundTask, err := db.GetOne(savedTask.Id)
 	assert.NoError(t, err)
-	assert.Equal(t, todo.Description, foundToDo.Description)
-	assert.Equal(t, todo.Done, foundToDo.Done)
+	assert.Equal(t, task.Description, foundTask.Description)
+	assert.Equal(t, task.Done, foundTask.Done)
 
-	todos, err := db.GetAll()
+	tasks, err := db.GetAll()
 	assert.NoError(t, err)
 
 	found := false
-	for _, todo := range *todos {
-		if todo.Id == savedTodo.Id {
+	for _, task := range *tasks {
+		if task.Id == savedTask.Id {
 			found = true
-			assert.Equal(t, savedTodo.Description, todo.Description)
-			assert.Equal(t, savedTodo.Done, todo.Done)
+			assert.Equal(t, savedTask.Description, task.Description)
+			assert.Equal(t, savedTask.Done, task.Done)
 			break
 		}
 	}
 	assert.True(t, found, "To Do not found in GetAll")
 
-	err = db.Delete(savedTodo.Id)
+	err = db.Delete(savedTask.Id)
 	assert.NoError(t, err)
 }

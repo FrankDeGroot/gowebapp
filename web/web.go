@@ -10,14 +10,14 @@ import (
 )
 
 const CONTENT_TYPE_JSON = "application/json;charset=utf-8"
-const TODO_PATH = "/api/todos"
+const TASKS_PATH = "/api/tasks"
 
 var (
-	ntfy = func(*act.TodoAction) {}
-	repo TodoRepo
+	ntfy = func(*act.TaskAction) {}
+	repo TaskRepo
 )
 
-func Serve(n act.Notifier, r TodoRepo) {
+func Serve(n act.Notifier, r TaskRepo) {
 	ntfy = n
 	repo = r
 	log.Println("Starting web server")
@@ -30,61 +30,61 @@ func Serve(n act.Notifier, r TodoRepo) {
 
 func setHandlers() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	http.HandleFunc("GET "+TODO_PATH, getAll)
-	http.HandleFunc("GET "+TODO_PATH+"/{id}", getOne)
-	http.HandleFunc("POST "+TODO_PATH, post)
-	http.HandleFunc("PUT "+TODO_PATH, put)
-	http.HandleFunc("DELETE "+TODO_PATH+"/{id}", delete)
+	http.HandleFunc("GET "+TASKS_PATH, getAll)
+	http.HandleFunc("GET "+TASKS_PATH+"/{id}", getOne)
+	http.HandleFunc("POST "+TASKS_PATH, post)
+	http.HandleFunc("PUT "+TASKS_PATH, put)
+	http.HandleFunc("DELETE "+TASKS_PATH+"/{id}", delete)
 }
 
 func getAll(w http.ResponseWriter, r *http.Request) {
-	todos, err := repo.GetAll()
+	tasks, err := repo.GetAll()
 	switch err {
 	case nil:
-		encode(w, todos)
+		encode(w, tasks)
 	default:
 		http.Error(w, "Error", http.StatusInternalServerError)
-		log.Printf("Error getting todos: %v\n", err)
+		log.Printf("Error getting tasks: %v\n", err)
 	}
 }
 
 func getOne(w http.ResponseWriter, r *http.Request) {
-	todo, err := repo.GetOne(r.PathValue("id"))
+	task, err := repo.GetOne(r.PathValue("id"))
 	switch err {
 	case nil:
-		encode(w, todo)
+		encode(w, task)
 	case db.ErrNotFound:
 		http.Error(w, "id not found", http.StatusNotFound)
 	default:
 		http.Error(w, "Error", http.StatusInternalServerError)
-		log.Printf("Error getting todo: %v\n", err)
+		log.Printf("Error getting task: %v\n", err)
 	}
 }
 
 func post(w http.ResponseWriter, r *http.Request) {
-	var todo = dto.Todo{}
-	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
+	var task = dto.Task{}
+	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
 		http.Error(w, "Error", http.StatusBadRequest)
 	}
-	savedTodo, err := repo.Insert(&todo)
+	savedTask, err := repo.Insert(&task)
 	if err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
-		log.Printf("Error posting todo: %v\n", err)
+		log.Printf("Error posting task: %v\n", err)
 	}
-	ntfy(act.Make(act.Post, savedTodo))
-	encode(w, savedTodo)
+	ntfy(act.Make(act.Post, savedTask))
+	encode(w, savedTask)
 }
 
 func put(w http.ResponseWriter, r *http.Request) {
-	var savedTodo = dto.SavedTodo{}
-	if err := json.NewDecoder(r.Body).Decode(&savedTodo); err != nil {
+	var savedTask = dto.SavedTask{}
+	if err := json.NewDecoder(r.Body).Decode(&savedTask); err != nil {
 		http.Error(w, "Error", http.StatusBadRequest)
 	}
-	if err := repo.Update(&savedTodo); err != nil {
+	if err := repo.Update(&savedTask); err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
-		log.Printf("Error putting todo: %v\n", err)
+		log.Printf("Error putting task: %v\n", err)
 	}
-	ntfy(act.Make(act.Put, &savedTodo))
+	ntfy(act.Make(act.Put, &savedTask))
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -92,9 +92,9 @@ func delete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if err := repo.Delete(id); err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
-		log.Printf("Error deleting todo: %v\n", err)
+		log.Printf("Error deleting task: %v\n", err)
 	}
-	ntfy(act.Make(act.Delete, &dto.SavedTodo{Id: id}))
+	ntfy(act.Make(act.Delete, &dto.SavedTask{Id: id}))
 	w.WriteHeader(http.StatusNoContent)
 }
 
