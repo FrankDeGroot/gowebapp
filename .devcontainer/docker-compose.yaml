@@ -3,6 +3,7 @@ services:
     container_name: vscode-golang-todo-app
     depends_on:
     - cockroachdb
+    - redpanda-0
     environment:
     - DATABASE_URL=postgres://root@cockroachdb:26257/defaultdb
     - KAFKA_BROKER=redpanda-0:9092
