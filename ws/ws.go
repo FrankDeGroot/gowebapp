@@ -10,7 +10,7 @@ import (
 	"github.com/coder/websocket/wsjson"
 )
 
-const WS_TODO_PATH = "/ws/todos"
+const WS_PATH = "/ws"
 
 var (
 	prod     Producer
@@ -19,7 +19,7 @@ var (
 
 func Open(p Producer, c Consumer) act.Notifier {
 	prod = p
-	http.HandleFunc("GET "+WS_TODO_PATH, getToDoActions)
+	http.HandleFunc("GET "+WS_PATH, getToDoActions)
 	go consume(c)
 	return notify
 }

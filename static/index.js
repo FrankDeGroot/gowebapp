@@ -6,7 +6,7 @@ let timeout = 100;
 
 function connect() {
 	const socket = new WebSocket(
-		`ws${protocol.includes("s") ? "s" : ""}://${host}/ws/todos`,
+		`ws${protocol.includes("s") ? "s" : ""}://${host}/ws`,
 	);
 
 	console.log("Connected")

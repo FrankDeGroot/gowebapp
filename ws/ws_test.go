@@ -29,7 +29,7 @@ func TestWebSocketConnection(t *testing.T) {
 			Todo: dto.Todo{Description: "123", Done: false}}}
 	mockConsumer.On("Consume").Return(todo, nil)
 
-	url := "ws" + strings.TrimPrefix(srv.URL, "http") + WS_TODO_PATH
+	url := "ws" + strings.TrimPrefix(srv.URL, "http") + WS_PATH
 	t.Log(url)
 	c, _, err := websocket.Dial(t.Context(), url, nil)
 	assert.NoError(t, err)
