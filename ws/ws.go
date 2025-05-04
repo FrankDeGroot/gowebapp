@@ -19,8 +19,8 @@ var (
 
 func Open(p Producer, c Consumer) act.Notifier {
 	prod = p
-	http.HandleFunc("GET "+WS_PATH, wsConnect)
-	go consume(c)
+	http.HandleFunc("GET "+WS_PATH, connect)
+	go broadcast(c)
 	return notify
 }
 
@@ -35,51 +35,51 @@ func notify(taskAction *act.TaskAction) {
 	}
 }
 
-func consume(cons Consumer) {
+func broadcast(cons Consumer) {
 	conns := make(map[*websocket.Conn]struct{}, 0)
-	for conn := range connChan {
-		conns[conn] = struct{}{}
-
-		for len(conns) != 0 {
-			task, err := cons.Consume()
-			if err != nil {
-				log.Printf("Error consuming task: %v\n", err)
+	consChan := make(chan *act.TaskAction)
+	defer close(consChan)
+	consContChan := make(chan bool)
+	defer close(consContChan)
+	for {
+		select {
+		case conn, ok := <-connChan:
+			if !ok {
+				return
 			}
-			if task == nil {
-				continue
+			conns[conn] = struct{}{}
+			readContChan := make(chan struct{})
+			defer close(readContChan)
+			go read(conn, readContChan)
+			if len(conns) == 1 {
+				go consume(cons, consChan, consContChan)
 			}
-
-		addConns:
-			for {
-				select {
-				case conn, ok := <-connChan:
-					if !ok {
-						return
-					}
-					conns[conn] = struct{}{}
-				default:
-					break addConns
-				}
+		case task, ok := <-consChan:
+			if !ok {
+				return
 			}
+			log.Printf("Broadcasting %v to %v conns", task, len(conns))
 			for conn := range conns {
-				log.Printf("Sending task event")
-				err = wsjson.Write(context.Background(), conn, task)
+				err := wsjson.Write(context.Background(), conn, task)
 				if err != nil {
+					conn.CloseNow()
 					delete(conns, conn)
 					log.Printf("Error writing to socket: %v", err)
+					if len(conns) == 0 {
+						consContChan <- false
+					}
 				}
 			}
-			log.Printf("Sent events successfully to %v connections", len(conns))
 		}
 	}
 }
 
-func wsConnect(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Getting events")
-	c, err := websocket.Accept(w, r, nil)
+func connect(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Connect")
+	conn, err := websocket.Accept(w, r, nil)
 	if err != nil {
 		http.Error(w, "Error", http.StatusInternalServerError)
-		log.Printf("Error accepting websocket: %v\n", err)
+		log.Printf("Error accepting websocket: %v", err)
 	}
-	connChan <- c
+	connChan <- conn
 }
