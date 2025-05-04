@@ -74,48 +74,6 @@ func broadcast(cons Consumer) {
 	}
 }
 
-func consume(cons Consumer, consChan chan *act.TaskAction, contChan chan bool) {
-	cont, ok := true, true
-	for {
-		select {
-		case cont, ok = <-contChan:
-			if !cont || !ok {
-				return
-			}
-		default:
-			task, err := cons.Consume()
-			if err != nil {
-				log.Printf("Error consuming task: %v\n", err)
-			}
-			if task == nil {
-				continue
-			}
-			log.Printf("Consumed %v", task)
-			consChan <- task
-		}
-	}
-}
-
-func read(conn *websocket.Conn, cont chan struct{}) {
-	for {
-		select {
-		case _, ok := <-cont:
-			if !ok {
-				return
-			}
-		default:
-			action := act.TaskAction{}
-			err := wsjson.Read(context.Background(), conn, &action)
-			if err != nil {
-				log.Printf("Error reading websocket %v", err)
-				conn.CloseNow()
-				return
-			}
-			log.Printf("Read %v", action)
-		}
-	}
-}
-
 func connect(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Connect")
 	conn, err := websocket.Accept(w, r, nil)
