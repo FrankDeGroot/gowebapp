@@ -7,16 +7,16 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+	"todo-app/db/mocks"
 	"todo-app/dto"
-	"todo-app/web/mocks"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	task      dto.Task            = dto.Task{Description: "test" + time.Now().Format(time.RFC3339), Done: false}
-	savedTask *dto.SavedTask      = &dto.SavedTask{Id: "1", Task: task}
-	mockRepo  *mocks.MockTaskRepo = new(mocks.MockTaskRepo)
+	task      dto.Task          = dto.Task{Description: "test" + time.Now().Format(time.RFC3339), Done: false}
+	savedTask *dto.SavedTask    = &dto.SavedTask{Id: "1", Task: task}
+	mockRepo  *mocks.MockTaskDb = new(mocks.MockTaskDb)
 )
 
 func init() {

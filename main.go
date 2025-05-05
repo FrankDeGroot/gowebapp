@@ -31,7 +31,7 @@ func main() {
 	}
 	defer c.Close()
 
-	n := ws.Open(p, c)
+	n := ws.Open(p, c, repo)
 	defer ws.Close()
 	web.Serve(n, repo)
 }

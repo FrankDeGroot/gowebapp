@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"todo-app/act"
+	"todo-app/db"
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
@@ -17,10 +18,10 @@ var (
 	connChan = make(chan *websocket.Conn)
 )
 
-func Open(p Producer, c Consumer) act.Notifier {
+func Open(p Producer, c Consumer, r db.TaskDber) act.Notifier {
 	prod = p
 	http.HandleFunc("GET "+WS_PATH, connect)
-	go broadcast(c)
+	go broadcast(c, r)
 	return notify
 }
 
@@ -35,7 +36,7 @@ func notify(taskAction *act.TaskAction) {
 	}
 }
 
-func broadcast(cons Consumer) {
+func broadcast(cons Consumer, repo db.TaskDber) {
 	conns := make(map[*websocket.Conn]struct{}, 0)
 	consChan := make(chan *act.TaskAction)
 	defer close(consChan)
@@ -50,7 +51,7 @@ func broadcast(cons Consumer) {
 			conns[conn] = struct{}{}
 			readContChan := make(chan struct{})
 			defer close(readContChan)
-			go read(conn, readContChan)
+			go read(conn, readContChan, repo)
 			if len(conns) == 1 {
 				go consume(cons, consChan, consContChan)
 			}
