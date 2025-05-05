@@ -14,10 +14,10 @@ const TASKS_PATH = "/api/tasks"
 
 var (
 	ntfy = func(*act.TaskAction) {}
-	repo TaskRepo
+	repo db.TaskDber
 )
 
-func Serve(n act.Notifier, r TaskRepo) {
+func Serve(n act.Notifier, r db.TaskDber) {
 	ntfy = n
 	repo = r
 	log.Println("Starting web server")

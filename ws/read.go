@@ -4,12 +4,13 @@ import (
 	"context"
 	"log"
 	"todo-app/act"
+	"todo-app/db"
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
 )
 
-func read(conn *websocket.Conn, cont chan struct{}) {
+func read(conn *websocket.Conn, cont chan struct{}, repo db.TaskDber) {
 	for {
 		select {
 		case _, ok := <-cont:
@@ -25,6 +26,14 @@ func read(conn *websocket.Conn, cont chan struct{}) {
 				return
 			}
 			log.Printf("Read %v", action)
+			switch action.Verb {
+			case act.Post:
+				savedTask, err := repo.Insert(&action.Task)
+				if err != nil {
+					log.Printf("Error on insert %v", err)
+				}
+				notify(act.Make(act.Post, savedTask))
+			}
 		}
 	}
 }
