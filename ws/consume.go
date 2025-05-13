@@ -13,6 +13,10 @@ func consume(cons Consumer, consChan chan *act.TaskAction, contChan chan bool) {
 			if !cont || !ok {
 				return
 			}
+		case _, ok = <-consChan:
+			if !ok {
+				return
+			}
 		default:
 			task, err := cons.Consume()
 			if err != nil {

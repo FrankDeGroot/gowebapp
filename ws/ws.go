@@ -18,9 +18,12 @@ var (
 	connChan = make(chan *websocket.Conn)
 )
 
+func init() {
+	http.HandleFunc("GET "+WS_PATH, connect)
+}
+
 func Open(p Producer, c Consumer, r db.TaskDber) act.Notifier {
 	prod = p
-	http.HandleFunc("GET "+WS_PATH, connect)
 	go broadcast(c, r)
 	return notify
 }

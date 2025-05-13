@@ -17,24 +17,23 @@ var (
 	repo db.TaskDber
 )
 
-func Serve(n act.Notifier, r db.TaskDber) {
-	ntfy = n
-	repo = r
-	log.Println("Starting web server")
-	setHandlers()
-	err := http.ListenAndServe(":8000", nil)
-	if err != nil {
-		log.Fatalf("Error serving http %v", err)
-	}
-}
-
-func setHandlers() {
+func init() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.HandleFunc("GET "+TASKS_PATH, getAll)
 	http.HandleFunc("GET "+TASKS_PATH+"/{id}", getOne)
 	http.HandleFunc("POST "+TASKS_PATH, post)
 	http.HandleFunc("PUT "+TASKS_PATH, put)
 	http.HandleFunc("DELETE "+TASKS_PATH+"/{id}", delete)
+}
+
+func Serve(n act.Notifier, r db.TaskDber) {
+	ntfy = n
+	repo = r
+	log.Println("Starting web server")
+	err := http.ListenAndServe(":8000", nil)
+	if err != nil {
+		log.Fatalf("Error serving http %v", err)
+	}
 }
 
 func getAll(w http.ResponseWriter, r *http.Request) {
