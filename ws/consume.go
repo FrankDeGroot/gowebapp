@@ -6,15 +6,12 @@ import (
 )
 
 func consume(cons Consumer, consChan chan *act.TaskAction, contChan chan bool) {
+	defer close(consChan)
 	cont, ok := true, true
 	for {
 		select {
 		case cont, ok = <-contChan:
 			if !cont || !ok {
-				return
-			}
-		case _, ok = <-consChan:
-			if !ok {
 				return
 			}
 		default:

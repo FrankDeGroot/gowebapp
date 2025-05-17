@@ -17,11 +17,10 @@ import (
 
 func TestConsumeReceive(t *testing.T) {
 	_, mockConsumer, _, _ := setup()
-	defer Close()
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	task := taskAction(act.Post)
+	task := taskAction(act.Post, t.Name())
 	consumeWait := make(chan time.Time)
 	defer close(consumeWait)
 	mockConsumer.On("Consume").WaitUntil(consumeWait).Return(task, nil)
@@ -40,11 +39,10 @@ func TestConsumeReceive(t *testing.T) {
 
 func TestReadApplyPost(t *testing.T) {
 	mockProducer, mockConsumer, mockTaskDber, _ := setup()
-	defer Close()
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	taskAction := taskAction(act.Post)
+	taskAction := taskAction(act.Post, t.Name())
 	consumeWait := make(chan time.Time)
 	defer close(consumeWait)
 	mockConsumer.On("Consume").WaitUntil(consumeWait).Return(taskAction, nil)
@@ -61,11 +59,10 @@ func TestReadApplyPost(t *testing.T) {
 
 func TestReadApplyPut(t *testing.T) {
 	mockProducer, mockConsumer, mockTaskDber, _ := setup()
-	defer Close()
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	taskAction := taskAction(act.Put)
+	taskAction := taskAction(act.Put, t.Name())
 	consumeWait := make(chan time.Time)
 	defer close(consumeWait)
 	mockConsumer.On("Consume").WaitUntil(consumeWait).Return(taskAction, nil)
@@ -82,11 +79,10 @@ func TestReadApplyPut(t *testing.T) {
 
 func TestReadApplyDelete(t *testing.T) {
 	mockProducer, mockConsumer, mockTaskDber, _ := setup()
-	defer Close()
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
-	taskAction := taskAction(act.Delete)
+	taskAction := taskAction(act.Delete, t.Name())
 	consumeWait := make(chan time.Time)
 	defer close(consumeWait)
 	mockConsumer.On("Consume").WaitUntil(consumeWait).Return(taskAction, nil)
@@ -117,8 +113,8 @@ func openConn(t *testing.T, srv *httptest.Server) *websocket.Conn {
 	return c
 }
 
-func taskAction(verb act.Verb) *act.TaskAction {
+func taskAction(verb act.Verb, descr string) *act.TaskAction {
 	return &act.TaskAction{Verb: verb,
 		SavedTask: dto.SavedTask{Id: "123",
-			Task: dto.Task{Description: "123", Done: false}}}
+			Task: dto.Task{Description: descr, Done: false}}}
 }

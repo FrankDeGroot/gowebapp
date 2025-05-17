@@ -12,7 +12,6 @@ import (
 const topic = "todo"
 
 func main() {
-
 	repo, err := db.Open()
 	if err != nil {
 		log.Fatal(err)
@@ -32,6 +31,5 @@ func main() {
 	defer c.Close()
 
 	n := ws.Open(p, c, repo)
-	defer ws.Close()
 	web.Serve(n, repo)
 }
