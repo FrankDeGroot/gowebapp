@@ -7,24 +7,20 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+	"todo-app/db/mocks"
 	"todo-app/dto"
-	"todo-app/web/mocks"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	task      dto.Task            = dto.Task{Description: "test" + time.Now().Format(time.RFC3339), Done: false}
-	savedTask *dto.SavedTask      = &dto.SavedTask{Id: "1", Task: task}
-	mockRepo  *mocks.MockTaskRepo = new(mocks.MockTaskRepo)
+	task      dto.Task       = dto.Task{Description: "test" + time.Now().Format(time.RFC3339), Done: false}
+	savedTask *dto.SavedTask = &dto.SavedTask{Id: "1", Task: task}
 )
 
-func init() {
-	repo = mockRepo
-	setHandlers()
-}
-
 func TestPostTask(t *testing.T) {
+	mockRepo := new(mocks.MockTaskDb)
+	repo = mockRepo
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
@@ -41,6 +37,8 @@ func TestPostTask(t *testing.T) {
 }
 
 func TestGetOneTask(t *testing.T) {
+	mockRepo := new(mocks.MockTaskDb)
+	repo = mockRepo
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
@@ -56,6 +54,8 @@ func TestGetOneTask(t *testing.T) {
 }
 
 func TestGetAllTasks(t *testing.T) {
+	mockRepo := new(mocks.MockTaskDb)
+	repo = mockRepo
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 
@@ -78,6 +78,8 @@ func TestGetAllTasks(t *testing.T) {
 }
 
 func TestDeleteTask(t *testing.T) {
+	mockRepo := new(mocks.MockTaskDb)
+	repo = mockRepo
 	srv := httptest.NewServer(nil)
 	defer srv.Close()
 

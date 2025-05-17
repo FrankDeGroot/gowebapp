@@ -5,6 +5,7 @@ import "todo-app/dto"
 type Verb string
 
 const (
+	Get    Verb = "Get" // Not published
 	Post   Verb = "Post"
 	Put    Verb = "Put"
 	Delete Verb = "Delete"

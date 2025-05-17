@@ -6,6 +6,7 @@ import (
 )
 
 func consume(cons Consumer, consChan chan *act.TaskAction, contChan chan bool) {
+	defer close(consChan)
 	cont, ok := true, true
 	for {
 		select {
