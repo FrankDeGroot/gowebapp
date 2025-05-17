@@ -64,7 +64,7 @@ func broadcast(cons Consumer, repo db.TaskDber) {
 				if err != nil {
 					conn.CloseNow()
 					delete(conns, conn)
-					log.Printf("Error writing to socket: %v", err)
+					log.Printf("Error writing to socket broadcasting %v", err)
 					if len(conns) == 0 {
 						consContChan <- false
 					}
