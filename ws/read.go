@@ -2,6 +2,7 @@ package ws
 
 import (
 	"context"
+	"errors"
 	"log"
 	"todo-app/act"
 	"todo-app/db"
@@ -21,9 +22,9 @@ func read(conn *websocket.Conn, cont chan struct{}, repo db.TaskDber) {
 			action := act.TaskAction{}
 			err := wsjson.Read(context.Background(), conn, &action)
 			if err != nil {
-				closeErr, ok := err.(*websocket.CloseError)
+				closeErr, ok := errors.Unwrap(errors.Unwrap(errors.Unwrap(err))).(websocket.CloseError)
 				if ok && closeErr.Code == websocket.StatusGoingAway {
-					return // Client closed connection
+					return
 				}
 				log.Printf("Error reading websocket %v", err)
 				conn.CloseNow()

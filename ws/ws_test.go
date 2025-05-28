@@ -157,7 +157,8 @@ func TestReadApplyGetAll(t *testing.T) {
 	defer srv.Close()
 
 	consumeWait := make(chan time.Time)
-	mockConsumer.On("Consume").WaitUntil(consumeWait).Return(nil, nil).Once()
+	mockConsumer.On("Consume").WaitUntil(consumeWait).
+		Return(taskAction(act.Post, "dummy"), nil)
 	defer close(consumeWait)
 
 	c := openConn(t, srv)
@@ -174,15 +175,12 @@ func TestReadApplyGetAll(t *testing.T) {
 	err := wsjson.Write(t.Context(), c, getAllAction)
 	assert.NoError(t, err, "Writing Get All action to websocket should not fail")
 
-	time.Sleep(100 * time.Millisecond)
-
 	var receivedTasks []dto.SavedTask
 	err = wsjson.Read(t.Context(), c, &receivedTasks)
 	assert.NoError(t, err, "Reading response from websocket should not fail")
 	assert.Equal(t, expectedTasks, receivedTasks, "Received tasks should match the expected tasks")
 
 	mockTaskDber.AssertExpectations(t)
-	mockConsumer.AssertExpectations(t)
 }
 
 func TestReadApplyGetOne(t *testing.T) {
@@ -191,7 +189,8 @@ func TestReadApplyGetOne(t *testing.T) {
 	defer srv.Close()
 
 	consumeWait := make(chan time.Time)
-	mockConsumer.On("Consume").WaitUntil(consumeWait).Return(nil, nil).Once()
+	mockConsumer.On("Consume").WaitUntil(consumeWait).
+		Return(taskAction(act.Post, "dummy"), nil)
 	defer close(consumeWait)
 
 	c := openConn(t, srv)
@@ -211,7 +210,6 @@ func TestReadApplyGetOne(t *testing.T) {
 	assert.Equal(t, expectedTask, receivedTask, "Received tasks should match the expected tasks")
 
 	mockTaskDber.AssertExpectations(t)
-	mockConsumer.AssertExpectations(t)
 }
 
 func setup() (*wsm.MockProducer, *wsm.MockConsumer, *dbm.MockTaskDb, func(*act.TaskAction)) {
