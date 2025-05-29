@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"todo-app/act"
+	"todo-app/db"
 
 	"github.com/coder/websocket"
 	"github.com/coder/websocket/wsjson"
@@ -17,15 +18,14 @@ var (
 	connChan = make(chan *websocket.Conn)
 )
 
-func Open(p Producer, c Consumer) act.Notifier {
-	prod = p
+func init() {
 	http.HandleFunc("GET "+WS_PATH, connect)
-	go broadcast(c)
-	return notify
 }
 
-func Close() {
-	close(connChan)
+func Open(p Producer, c Consumer, r db.TaskDber) act.Notifier {
+	prod = p
+	go broadcast(c, r)
+	return notify
 }
 
 func notify(taskAction *act.TaskAction) {
@@ -35,12 +35,12 @@ func notify(taskAction *act.TaskAction) {
 	}
 }
 
-func broadcast(cons Consumer) {
+func broadcast(cons Consumer, repo db.TaskDber) {
 	conns := make(map[*websocket.Conn]struct{}, 0)
-	consChan := make(chan *act.TaskAction)
-	defer close(consChan)
 	consContChan := make(chan bool)
 	defer close(consContChan)
+	consChan := make(chan *act.TaskAction)
+	defer (func() { consContChan <- false })()
 	for {
 		select {
 		case conn, ok := <-connChan:
@@ -50,7 +50,7 @@ func broadcast(cons Consumer) {
 			conns[conn] = struct{}{}
 			readContChan := make(chan struct{})
 			defer close(readContChan)
-			go read(conn, readContChan)
+			go read(conn, readContChan, repo)
 			if len(conns) == 1 {
 				go consume(cons, consChan, consContChan)
 			}
@@ -64,7 +64,7 @@ func broadcast(cons Consumer) {
 				if err != nil {
 					conn.CloseNow()
 					delete(conns, conn)
-					log.Printf("Error writing to socket: %v", err)
+					log.Printf("Error writing to socket broadcasting %v", err)
 					if len(conns) == 0 {
 						consContChan <- false
 					}
