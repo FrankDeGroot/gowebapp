@@ -1,10 +1,12 @@
+import ApiClient from "./api-client.js"
+
 customElements.define('form-list',
 	class extends HTMLElement {
 		#template = this.querySelector("template")
 		#newForm = this.querySelector(".new")
 		#marked = new Set()
-		#path = this.dataset.path
 		#prefix = this.dataset.prefix
+		#apiClient = new ApiClient(this.#prefix)
 
 		connectedCallback() {
 			document.addEventListener(`${this.#prefix}:post`, e => {
@@ -20,7 +22,7 @@ customElements.define('form-list',
 			this.addEventListener('submit', async e => {
 				e.preventDefault()
 				if (e.target === this.#newForm) {
-					this.#toForm(await this.#post(e.target))
+					this.#toForm(await this.#post(this.#toObj(e.target)))
 					e.target.reset()
 				} else {
 					this.#markPut(e.target)
@@ -30,11 +32,11 @@ customElements.define('form-list',
 				const form = e.target.closest('form')
 				if (form !== this.#newForm) {
 					switch (e.target.type) {
-						case 'text': 
+						case 'text':
 							this.#markPut(form)
 							break
 						default:
-							this.#put(form)
+							this.#put(this.#toObj(form))
 							break
 					}
 				}
@@ -57,21 +59,22 @@ customElements.define('form-list',
 
 		async #reload() {
 			this.#busy()
-			const response = await fetch(this.#path)
-			if (response.ok) {
-				this.#done()
-			} else {
-				this.#error()
-			}
-			const ids = new Set()
-			for (const obj of await response.json()) {
-				ids.add(obj.id)
-				this.#toForm(obj)
-			}
-			for (const form of this.querySelectorAll('form:not(.new)')) {
-				if (!ids.has(form.id.value)) {
-					this.removeChild(form)
+			try {
+				let response = await this.#apiClient.get()
+				const ids = new Set()
+				for (const obj of await response) {
+					ids.add(obj.id)
+					this.#toForm(obj)
 				}
+				this.#done()
+				for (const form of this.querySelectorAll('form:not(.new)')) {
+					if (!ids.has(form.id.value)) {
+						this.removeChild(form)
+					}
+				}
+			} catch(err) {
+				console.log(err)
+				this.#error()
 			}
 		}
 
@@ -107,43 +110,42 @@ customElements.define('form-list',
 		#markPut(form) {
 			this.#marked.add(form)
 			setTimeout(() => {
-				this.#marked.forEach(form => this.#put(form))
+				this.#marked.forEach(form => this.#put(this.#toObj(form)))
 				this.#marked.clear()
 			}, 1000)
 		}
 
-		async #post(form) {
-			return await (await this.#save('POST', form)).json()
-		}
-
-		async #del(id) {
+		async #post(obj) {
 			this.#busy()
-			const response = await fetch(`${this.#path}/${id}`, {
-				method: 'DELETE'
-			})
-			if (response.ok) {
+			try {
+				let response = await this.#apiClient.post(obj)
 				this.#done()
-			} else {
+				return response
+			} catch(err) {
+				console.error(err)
 				this.#error()
 			}
 		}
 
-		async #put(form) {
-			await this.#save('PUT', form)
+		async #put(obj) {
+			this.#busy()
+			try {
+				await this.#apiClient.put(obj)
+				this.#done()
+			} catch(err) {
+				console.error(err)
+				this.#error()
+			}
 		}
 
-		async #save(method, form) {
+		async #del(id) {
 			this.#busy()
-			const response = await fetch(this.#path, {
-				method,
-				body: JSON.stringify(this.#toObj(form))
-			})
-			if (response.ok) {
+			try {
+				await this.#apiClient.del(id)
 				this.#done()
-				return response
-			} else {
+			} catch(err) {
+				console.error(err)
 				this.#error()
-				throw "Error saving"
 			}
 		}
 
