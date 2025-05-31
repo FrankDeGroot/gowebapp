@@ -2,13 +2,13 @@ customElements.define('status-badge',
 	class extends HTMLElement {
 		connectedCallback() {
 			this.innerText = '✔️'
-			document.addEventListener('busy', e => {
+			document.addEventListener('busy', _ => {
 				this.innerText = '⏲️'
 			})
-			document.addEventListener('done', e => {
+			document.addEventListener('done', _ => {
 				this.innerText = '✔️'
 			})
-			document.addEventListener('error', e => {
+			document.addEventListener('error', _ => {
 				this.innerText = '❌'
 			})
 		}

@@ -8,7 +8,7 @@
 </head>
 
 <body>
-	<h1>To Do App <status-badge></status-badge></h1>
+	<h1>To Do App <status-badge></status-badge><connected-badge></connected-badge></h1>
 	<form-list id="tasks" data-prefix="tasks">
 		<template>
 			<form>
@@ -22,6 +22,7 @@
 		<form class="new">
 			<input name="description" placeholder="description" required>
 			<input type="submit" value="➕">
+			<input type="button" value="🔄️" name="load">
 		</form>
 	</form-list>
 	<script src="index.js" type="module"></script>

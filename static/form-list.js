@@ -19,10 +19,14 @@ customElements.define('form-list',
 				const form = this.querySelector(`form[id='${this.#formId(e.detail)}'`)
 				if (form) this.removeChild(form)
 			})
+			document.addEventListener(`${this.#prefix}:getAll`, e => {
+				this.#fill(e)
+			})
 			this.addEventListener('submit', async e => {
 				e.preventDefault()
 				if (e.target === this.#newForm) {
-					this.#toForm(await this.#post(this.#toObj(e.target)))
+					let response = await this.#post(this.#toObj(e.target))
+					if (response) this.#toForm(response)
 					e.target.reset()
 				} else {
 					this.#markPut(e.target)
@@ -43,38 +47,47 @@ customElements.define('form-list',
 			})
 			this.addEventListener('click', async e => {
 				const elm = e.target
-				const form = elm.closest('form')
-				if (form === this.#newForm) return
-				if (elm.name === 'delete') {
-					await this.#del(form.id.value)
-					try {
-						this.removeChild(form)
-					} catch (err) {
-						if (err.name !== 'NotFoundError') throw err
+				switch (elm.name) {
+					case 'delete':
+						await this.#del(form.id.value)
+						try {
+							this.removeChild(form)
+						} catch (err) {
+							if (err.name !== 'NotFoundError') throw err
+						}
+						break
+					case 'load':
+						this.#load()
+						break
+					default:
+						const form = elm.closest('form')
+						if (form === this.#newForm) return
 					}
-				}
-			})
-			this.#reload()
+				})
+			this.#load()
 		}
 
-		async #reload() {
+		async #load() {
 			this.#busy()
-			try {
-				let response = await this.#apiClient.get()
-				const ids = new Set()
-				for (const obj of await response) {
-					ids.add(obj.id)
-					this.#toForm(obj)
-				}
+			this.#apiClient.get().then(tasks => {
 				this.#done()
-				for (const form of this.querySelectorAll('form:not(.new)')) {
-					if (!ids.has(form.id.value)) {
-						this.removeChild(form)
-					}
-				}
-			} catch(err) {
-				console.log(err)
+				if (tasks) this.#fill(tasks)
+			}).catch(err => {
 				this.#error()
+				console.log(err)
+			})
+		}
+
+		async #fill(tasks) {
+			const ids = new Set()
+			for (const obj of tasks) {
+				ids.add(obj.id)
+				this.#toForm(obj)
+			}
+			for (const form of this.querySelectorAll('form:not(.new)')) {
+				if (!ids.has(form.id.value)) {
+					this.removeChild(form)
+				}
 			}
 		}
 
@@ -121,7 +134,7 @@ customElements.define('form-list',
 				let response = await this.#apiClient.post(obj)
 				this.#done()
 				return response
-			} catch(err) {
+			} catch (err) {
 				console.error(err)
 				this.#error()
 			}
@@ -132,7 +145,7 @@ customElements.define('form-list',
 			try {
 				await this.#apiClient.put(obj)
 				this.#done()
-			} catch(err) {
+			} catch (err) {
 				console.error(err)
 				this.#error()
 			}
@@ -143,7 +156,7 @@ customElements.define('form-list',
 			try {
 				await this.#apiClient.del(id)
 				this.#done()
-			} catch(err) {
+			} catch (err) {
 				console.error(err)
 				this.#error()
 			}
