@@ -20,7 +20,7 @@ customElements.define('form-list',
 				if (form) this.removeChild(form)
 			})
 			document.addEventListener(`${this.#prefix}:getAll`, e => {
-				this.#fill(e)
+				this.#fill(e.detail)
 			})
 			this.addEventListener('submit', async e => {
 				e.preventDefault()
@@ -47,6 +47,7 @@ customElements.define('form-list',
 			})
 			this.addEventListener('click', async e => {
 				const elm = e.target
+				const form = elm.closest('form')
 				switch (elm.name) {
 					case 'delete':
 						await this.#del(form.id.value)
@@ -60,7 +61,6 @@ customElements.define('form-list',
 						this.#load()
 						break
 					default:
-						const form = elm.closest('form')
 						if (form === this.#newForm) return
 					}
 				})

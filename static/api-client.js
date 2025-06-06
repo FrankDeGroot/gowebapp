@@ -8,9 +8,13 @@ export default class ApiClient {
 	}
 
 	async get() {
-		const response = await fetch(this.#path)
-		if (!response.ok) throw "Error get"
-		return await response.json()
+		if (wsc.wsClient.connected) {
+			wsc.wsClient.send(JSON.stringify({verb: "Get"}))
+		} else {
+			const response = await fetch(this.#path)
+			if (!response.ok) throw "Error get"
+			return await response.json()
+		}
 	}
 
 	async post(task) {
